@@ -297,6 +297,17 @@ class Inspections extends AdminController
         $program = $this->programs_model->get($inspection->program_id);
 
         $data['activity']          = $this->inspections_model->get_inspection_activity($id);
+        
+        switch ($inspection->status) {
+            case '1':
+                $inspection->inspection_item_info = 'inspection_item_proposed';
+                break;
+            
+            default:
+                $inspection->inspection_item_info = 'inspection_item_processed';
+                break;
+        }
+
         $data['inspection']          = $inspection;
         $data['program']          = $program;
         $data['members']           = $this->staff_model->get('', ['active' => 1]);

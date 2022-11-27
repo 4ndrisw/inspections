@@ -407,7 +407,7 @@
                </div>
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_inspection_items">
-               <span class="label label-success mbot5 mtop5"><?php echo _l('inspection_item_proposed'); ?> </span>
+               <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
                <hr />
                <?php render_datatable(array( _l( 'inspection_items'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'inspection_items'); ?>
             </div>

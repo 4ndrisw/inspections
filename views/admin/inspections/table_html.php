@@ -6,13 +6,13 @@ $table_data = array(
       'name'=>_l('inspection_dt_table_heading_client'),
       'th_attrs'=>array('class'=> (isset($client) ? 'not_visible' : ''))
    ),
-   _l('inspection_dt_table_heading_amount'),
-   _l('inspections_total_tax'),
+   _l('surveyors'),
+   _l('inspector'),
    array(
       'name'=>_l('invoice_inspection_year'),
       'th_attrs'=>array('class'=>'not_visible')
    ),
-   _l('projects'),
+   _l('inspector_staff'),
    _l('inspection_dt_table_heading_date'),
    _l('reference_no'),
    _l('inspection_dt_table_heading_status'));

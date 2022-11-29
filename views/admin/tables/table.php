@@ -6,13 +6,12 @@ $program_id = $this->ci->input->post('program_id');
 
 $aColumns = [
     db_prefix() . 'inspections.number',
-    db_prefix() . 'inspections.total',
+    get_sql_select_client_company(),
+    db_prefix() . 'inspections.surveyor_id',
     db_prefix() . 'inspections.inspector_id',
     'YEAR('. db_prefix() .'inspections.date) as year',
-    get_sql_select_client_company(),
-    db_prefix() . 'programs.number as program_number',
+    db_prefix() . 'inspections.inspector_staff_id',
     db_prefix() . 'inspections.date',
-    'expirydate',
     db_prefix() . 'inspections.reference_no',
     db_prefix() . 'inspections.status',
     ];
@@ -42,11 +41,11 @@ if ($this->ci->input->post('not_sent')) {
     array_push($filter, 'OR (sent= 0 AND ' . db_prefix() . 'inspections.status NOT IN (2,3,4))');
 }
 if ($this->ci->input->post('invoiced')) {
-    array_push($filter, 'OR invoiceid IS NOT NULL');
+    array_push($filter, 'OR inspector_id IS NOT NULL');
 }
 
 if ($this->ci->input->post('not_invoiced')) {
-    array_push($filter, 'OR invoiceid IS NULL');
+    array_push($filter, 'OR inspector_id IS NULL');
 }
 $statuses  = $this->ci->inspections_model->get_statuses();
 $statusIds = [];
@@ -108,7 +107,7 @@ if (count($custom_fields) > 4) {
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     db_prefix() . 'inspections.id',
     db_prefix() . 'inspections.clientid',
-    db_prefix() . 'inspections.invoiceid',
+    db_prefix() . 'inspections.inspector_id',
     db_prefix() . 'currencies.name as currency_name',
     'program_id',
     db_prefix() . 'inspections.deleted_customer_name',
@@ -139,29 +138,27 @@ foreach ($rResult as $aRow) {
 
     $row[] = $numberOutput;
 
-    $amount = isset($aRow['total']) ? $aRow['total'] : '';
-
-    if ($aRow['invoiceid']) {
-        $amount .= '<br /><span class="hide"> - </span><span class="text-success">' . _l('inspection_invoiced') . '</span>';
-    }
-
-    $row[] = $amount;
-
-    $row[] = isset($aRow['inspector_id']) ? $aRow['inspector_id'] : '';
-
-    $row[] = $aRow['year'];
-
     if (empty($aRow['deleted_customer_name'])) {
         $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '">' . $aRow['company'] . '</a>';
     } else {
         $row[] = $aRow['deleted_customer_name'];
     }
 
-    $row[] = '<a href="' . admin_url('programs/view/' . $aRow['program_id']) . '">' . format_program_number($aRow['program_number']) . '</a>';
+    $row[] = get_surveyor_name_by_id($aRow[db_prefix().'inspections.surveyor_id']);
 
-    $row[] = _d($aRow[db_prefix() . 'inspections.date']);
+    $inspector = get_surveyor_name_by_id($aRow[db_prefix().'inspections.inspector_id']);
 
-    $row[] = _d($aRow['expirydate']);
+    if ($aRow['inspector_id']) {
+        $inspector .= '<br /><span class="hide"> - </span><span class="text-success">' . _l('inspectioned') . '</span>';
+    }
+
+    $row[] = $inspector;
+
+    $row[] = $aRow['year'];
+
+    $row[] = get_staff_full_name($aRow[db_prefix().'inspections.inspector_staff_id']);
+
+    $row[] = html_date($aRow[db_prefix() . 'inspections.date']);
 
     $row[] = $aRow[db_prefix() . 'inspections.reference_no'];
 

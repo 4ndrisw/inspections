@@ -125,10 +125,10 @@
                </div>
                <div class="pull-right _buttons">
                   <?php if(staff_can('edit', 'inspections')){ ?>
-                  <a href="<?php echo admin_url('inspections/inspection/'.$inspection->id); ?>" class="btn btn-default btn-with-tooltip" data-toggle="tooltip" title="<?php echo _l('edit_inspection_tooltip'); ?>" data-placement="bottom"><i class="fa fa-pencil-square-o"></i></a>
+                  <a href="<?php echo admin_url('inspections/inspection/'.$inspection->id); ?>" class="btn btn-default btn-with-tooltip" data-toggle="tooltip" title="<?php echo _l('edit_inspection_tooltip'); ?>" data-placement="bottom"><i class="fa-solid fa-pen-to-square"></i></a>
                   <?php } ?>
                   <div class="btn-group">
-                     <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-file-pdf-o"></i><?php if(is_mobile()){echo ' PDF';} ?> <span class="caret"></span></a>
+                     <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-solid fa-file-pdf"></i><?php if(is_mobile()){echo ' PDF';} ?> <span class="caret"></span></a>
                      <ul class="dropdown-menu dropdown-menu-right">
                         <li class="hidden-xs"><a href="<?php echo admin_url('inspections/pdf/'.$inspection->id.'?output_type=I'); ?>"><?php echo _l('view_pdf'); ?></a></li>
                         <li class="hidden-xs"><a href="<?php echo admin_url('inspections/pdf/'.$inspection->id.'?output_type=I'); ?>" target="_blank"><?php echo _l('view_pdf_in_new_window'); ?></a></li>
@@ -271,7 +271,7 @@
                         <h4 class="font-medium mbot15"><?php echo _l('related_to_program',array(
                            _l('inspection_lowercase'),
                            _l('program_lowercase'),
-                           '<a href="'.admin_url('programs/programs/'.$inspection->program_id).'" target="_blank">' . format_program_number($inspection->program_id) . '</a>',
+                           '<a href="'.admin_url('programs/list_programs/'.$inspection->program_id).'" target="_blank">' . format_program_number($inspection->program_id) . '</a>',
                            )); ?></h4>
                      </div>
                      <?php } ?>

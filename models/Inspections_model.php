@@ -353,16 +353,13 @@ class Inspections_model extends App_Model
 
 
         $id = $this->add($new_inspection_data);
-        var_dump($id);
 
         if ($id) {
             $key                             = 1;
             $_inspection->items = $this->get_rest_inspection_items($_inspection);
             
             foreach ($_inspection->items as $item) {
-                $this->db->where('id', $item['id']);
-                echo $item['id'] . '--<br /> ';
-                
+                $this->db->where('id', $item['id']);    
                 $this->db->update(db_prefix() . 'program_items', [
                     'inspection_id'   => $id,
                 ]);

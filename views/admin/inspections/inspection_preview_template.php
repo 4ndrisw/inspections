@@ -36,6 +36,7 @@
                      <a href="#tab_program_items" onclick="initDataTable('.table-program_items', admin_url + 'inspections/get_program_items_table/'
                                                                                        + <?php echo $program->clientid ?> + '/'
                                                                                        + <?php echo $inspection->program_id ?> + '/'
+                                                                                       + <?php echo $inspection->status ?> + '/'
                                                                                        + <?php echo $inspection->id ;?>, undefined, undefined, undefined,[1,'asc']); return false;" aria-controls="tab_program_items" role="tab" data-toggle="tab">
                      <?php echo _l('program_items_tab'); ?>
                      <?php
@@ -267,10 +268,10 @@
                      <?php } ?>
                      <?php if($inspection->program_id != 0){ ?>
                      <div class="col-md-12">
-                        <h4 class="font-medium mbot15"><?php echo _l('related_to_project',array(
+                        <h4 class="font-medium mbot15"><?php echo _l('related_to_program',array(
                            _l('inspection_lowercase'),
-                           _l('project_lowercase'),
-                           '<a href="'.admin_url('projects/view/'.$inspection->program_id).'" target="_blank">' . $inspection->project_data->name . '</a>',
+                           _l('program_lowercase'),
+                           '<a href="'.admin_url('programs/programs/'.$inspection->program_id).'" target="_blank">' . format_program_number($inspection->program_id) . '</a>',
                            )); ?></h4>
                      </div>
                      <?php } ?>
@@ -321,18 +322,13 @@
                            <?php echo $inspection->reference_no; ?>
                         </p>
                         <?php } ?>
-                        <?php if($inspection->sale_agent != 0 && get_option('show_sale_agent_on_inspections') == 1){ ?>
+                        <?php if($inspection->inspector_staff_id != 0 && get_option('show_assigned_on_inspections') == 1){ ?>
                         <p class="no-mbot">
-                           <span class="bold"><?php echo _l('sale_agent_string'); ?>:</span>
-                           <?php echo get_staff_full_name($inspection->sale_agent); ?>
+                           <span class="bold"><?php echo _l('inspector_staff_string'); ?>:</span>
+                           <?php echo get_staff_full_name($inspection->inspector_staff_id); ?>
                         </p>
                         <?php } ?>
-                        <?php if($inspection->program_id != 0 && get_option('show_project_on_inspection') == 1){ ?>
-                        <p class="no-mbot">
-                           <span class="bold"><?php echo _l('project'); ?>:</span>
-                           <?php echo get_project_name_by_id($inspection->program_id); ?>
-                        </p>
-                        <?php } ?>
+
                         <?php $pdf_custom_fields = get_custom_fields('inspection',array('show_on_pdf'=>1));
                            foreach($pdf_custom_fields as $field){
                            $value = get_custom_field_value($inspection->id,$field['id'],'inspection');
@@ -353,6 +349,7 @@
                               ?>
                         </div>
                      </div>
+
                      <div class="col-md-5 col-md-offset-7">
                      </div>
                      <?php if(count($inspection->attachments) > 0){ ?>
@@ -410,6 +407,8 @@
                <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
                <hr />
                <?php render_datatable(array( _l( 'inspection_items'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'inspection_items'); ?>
+               <?php echo _l('this_list_has_been_load_from_master_of_equipment'); ?>
+
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_program_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l('program_item_proposed'); ?> </span>

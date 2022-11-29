@@ -13,7 +13,6 @@ $table_data = array(
       'th_attrs'=>array('class'=> (isset($client) ? 'not_visible' : ''))
    ),
    _l('projects'),
-   _l('tags'),
    _l('inspection_dt_table_heading_date'),
    _l('inspection_dt_table_heading_expirydate'),
    _l('reference_no'),

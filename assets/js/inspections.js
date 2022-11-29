@@ -101,3 +101,73 @@ function inspections_remove_inspection_item(id) {
         reload_inspections_tables();
     });
 }
+
+
+function inspections_load_inspection_template(id) {
+    var data = {};
+    data.id = id;
+    console.log(data);
+    $.post(admin_url + 'inspections/load_inspection_template', data).done(function (response) {
+        //reload_inspections_tables();
+    });
+}
+
+// Init inspection modal and get data from server
+function init_inspection_items_modal(inspection_id, jenis_pesawat_id) {
+  var queryStr = "";
+  var $leadModal = $("#lead-modal");
+  var $inspectionAddEditModal = $("#_inspection_modal");
+  if ($leadModal.is(":visible")) {
+    queryStr +=
+      "?opened_from_lead_id=" + $leadModal.find('input[name="leadid"]').val();
+    $leadModal.modal("hide");
+  } else if ($inspectionAddEditModal.attr("data-lead-id") != undefined) {
+    queryStr +=
+      "?opened_from_lead_id=" + $inspectionAddEditModal.attr("data-lead-id");
+  }
+
+  requestGet(admin_url + "inspections/get_inspection_item_data/" + inspection_id + '/' + jenis_pesawat_id)
+    .done(function (response) {
+      _inspection_append_html(response);
+      /*
+      if (typeof jenis_pesawat_id != "undefined") {
+        setTimeout(function () {
+          $('[data-inspection-jenis_pesawat-href-id="' + jenis_pesawat_id + '"]').click();
+        }, 1000);
+      }
+      */
+
+    })
+    .fail(function (data) {
+      $("#inspection-modal").modal("hide");
+      alert_float("danger", data.responseText);
+    });
+}
+
+// General function to append inspection html returned from request
+function _inspection_append_html(html) {
+  var $inspectionModal = $("#inspection-modal");
+
+  $inspectionModal.find(".data").html(html);
+  //init_inspections_checklist_items(false, inspection_id);
+  //recalculate_checklist_items_progress();
+  //do_inspection_checklist_items_height();
+
+  setTimeout(function () {
+    $inspectionModal.modal("show");
+    // Init_tags_input is trigged too when inspection modal is shown
+    // This line prevents triggering twice.
+    if ($inspectionModal.is(":visible")) {
+      init_tags_inputs();
+    }
+    //init_form_reminder("inspection");
+    //fix_inspection_modal_left_col_height();
+
+    // Show the comment area on mobile when inspection modal is opened
+    // Because the user may want only to upload file, but if the comment textarea is not focused the dropzone won't be shown
+
+    if (is_mobile()) {
+      //init_new_inspection_comment(true);
+    }
+  }, 150);
+}

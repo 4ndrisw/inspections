@@ -306,14 +306,14 @@ class Inspections_model extends App_Model
         }
 
         $new_inspection_data['show_quantity_as'] = $_inspection->show_quantity_as;
-        $new_inspection_data['currency']         = $_inspection->currency;
-        $new_inspection_data['subtotal']         = $_inspection->subtotal;
-        $new_inspection_data['total']            = $_inspection->total;
+        //$new_inspection_data['currency']         = $_inspection->currency;
+        //$new_inspection_data['subtotal']         = $_inspection->subtotal;
+        //$new_inspection_data['total']            = $_inspection->total;
         $new_inspection_data['adminnote']        = $_inspection->adminnote;
         $new_inspection_data['adjustment']       = $_inspection->adjustment;
-        $new_inspection_data['discount_percent'] = $_inspection->discount_percent;
-        $new_inspection_data['discount_total']   = $_inspection->discount_total;
-        $new_inspection_data['discount_type']    = $_inspection->discount_type;
+        //$new_inspection_data['discount_percent'] = $_inspection->discount_percent;
+        //$new_inspection_data['discount_total']   = $_inspection->discount_total;
+        //$new_inspection_data['discount_type']    = $_inspection->discount_type;
         $new_inspection_data['terms']            = $_inspection->terms;
         $new_inspection_data['sale_agent']       = $_inspection->sale_agent;
         $new_inspection_data['reference_no']     = $_inspection->reference_no;
@@ -337,49 +337,38 @@ class Inspections_model extends App_Model
         $new_inspection_data['clientnote'] = $_inspection->clientnote;
         $new_inspection_data['adminnote']  = '';
         $new_inspection_data['newitems']   = [];
-        $custom_fields_items             = get_custom_fields('items');
-        $key                             = 1;
-        foreach ($_inspection->items as $item) {
-            $new_inspection_data['newitems'][$key]['description']      = $item['description'];
-            $new_inspection_data['newitems'][$key]['long_description'] = clear_textarea_breaks($item['long_description']);
-            $new_inspection_data['newitems'][$key]['qty']              = $item['qty'];
-            $new_inspection_data['newitems'][$key]['unit']             = $item['unit'];
-            $new_inspection_data['newitems'][$key]['taxname']          = [];
-            $taxes                                                   = get_inspection_item_taxes($item['id']);
-            foreach ($taxes as $tax) {
-                // tax name is in format TAX1|10.00
-                array_push($new_inspection_data['newitems'][$key]['taxname'], $tax['taxname']);
-            }
-            $new_inspection_data['newitems'][$key]['rate']  = $item['rate'];
-            $new_inspection_data['newitems'][$key]['order'] = $item['item_order'];
-            foreach ($custom_fields_items as $cf) {
-                $new_inspection_data['newitems'][$key]['custom_fields']['items'][$cf['id']] = get_custom_field_value($item['id'], $cf['id'], 'items', false);
 
-                if (!defined('COPY_CUSTOM_FIELDS_LIKE_HANDLE_POST')) {
-                    define('COPY_CUSTOM_FIELDS_LIKE_HANDLE_POST', true);
-                }
-            }
-            $key++;
-        }
+        //
+        // get_rest_inspection_items here
+        //
+
+        echo '<pre>';
+        var_dump($_inspection);
+        echo '----------------- <br />';
+
+
+        var_dump($_inspection->items);
+        echo '</pre>';
+
+
+
         $id = $this->add($new_inspection_data);
+        var_dump($id);
+
         if ($id) {
-            $custom_fields = get_custom_fields('inspection');
-            foreach ($custom_fields as $field) {
-                $value = get_custom_field_value($_inspection->id, $field['id'], 'inspection', false);
-                if ($value == '') {
-                    continue;
-                }
-
-                $this->db->insert(db_prefix() . 'customfieldsvalues', [
-                    'relid'   => $id,
-                    'fieldid' => $field['id'],
-                    'fieldto' => 'inspection',
-                    'value'   => $value,
+            $key                             = 1;
+            $_inspection->items = $this->get_rest_inspection_items($_inspection);
+            
+            foreach ($_inspection->items as $item) {
+                $this->db->where('id', $item['id']);
+                echo $item['id'] . '--<br /> ';
+                
+                $this->db->update(db_prefix() . 'program_items', [
+                    'inspection_id'   => $id,
                 ]);
-            }
 
-            $tags = get_tags_in($_inspection->id, 'inspection');
-            handle_tags_save($tags, $id, 'inspection');
+                $key++;
+            }
 
             log_activity('Copied Inspection ' . format_inspection_number($_inspection->id));
 
@@ -388,6 +377,20 @@ class Inspections_model extends App_Model
 
         return false;
     }
+    /**
+     * Performs rest of program items for inspections 
+     * @param array $data
+     * @return array
+     */
+    public function get_rest_inspection_items($inspection)
+    {
+        $this->db->where('clientid',$inspection->clientid);
+        $this->db->where('program_id',$inspection->program_id);
+        $this->db->where('inspection_id', null);
+        $items = $this->db->get(db_prefix(). 'program_items')->result_array();
+        return $items;
+    }
+
 
     /**
      * Performs inspections totals status
@@ -570,6 +573,28 @@ class Inspections_model extends App_Model
         $this->db->where('id', $id);
 
         return $this->db->get(db_prefix() . 'itemable')->row();
+    }
+
+    /**
+     * Get item by id
+     * @param mixed $id item id
+     * @return object
+     */
+    public function get_inspection_items($id)
+    {
+        $this->db->where('id', $id);
+
+        return $this->db->get(db_prefix() . 'program_items')->row();
+    }
+    /**
+     * Get item by id
+     * @param mixed $id item id
+     * @return object
+     */
+    public function get_inspection_item_data($inspection_item_id, $jenis_pesawat)
+    {
+        $this->db->where('inspection_item_id', $inspection_item_id);
+        return $this->db->get(db_prefix() . $jenis_pesawat)->row();
     }
 
     /**
@@ -1290,7 +1315,7 @@ class Inspections_model extends App_Model
     {
         $this->db->where('rel_id', $id);
         $this->db->where('rel_type', 'inspection');
-        $this->db->order_by('date', 'asc');
+        $this->db->order_by('date', 'desc');
 
         return $this->db->get(db_prefix() . 'sales_activity')->result_array();
     }
@@ -1395,6 +1420,102 @@ class Inspections_model extends App_Model
         $this->db->where('id', $data['id']);
         $this->db->update(db_prefix() . 'program_items', $data);
     }
+
+
+    /**
+     * Insert new inspection to database
+     * @param array $data invoiec data
+     * @return mixed - false if not insert, inspection ID if succes
+     */
+    public function add_inspection_item_data($data, $jenis_pesawat)
+    {
+        $data['datecreated'] = date('Y-m-d H:i:s');
+
+        $data['addedfrom'] = get_staff_user_id();
+
+        $save_and_send = isset($data['save_and_send']);
+
+
+        $this->db->insert(db_prefix() . $jenis_pesawat, $data);
+        $insert_id = $this->db->insert_id();
+
+        if ($insert_id) {
+            // Update next inspection number in settings
+            $this->db->where('name', 'next_inspection_number');
+            $this->db->set('value', 'value+1', false);
+            $this->db->update(db_prefix() . 'options');
+
+
+            $this->log_inspection_activity($insert_id, 'inspection_item_data_activity_created');
+
+            hooks()->do_action('after_inspection_item_added', $insert_id);
+
+            return $insert_id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Update inspection data
+     * @param array $data inspection data
+     * @param mixed $id inspectionid
+     * @return boolean
+     */
+    public function update_inspection_item_data($data, $jenis_pesawat, $id)
+    {
+        $affectedRows = 0;
+
+        $origin = $this->get_inspection_item_data($id, $jenis_pesawat);
+
+        $save_and_send = isset($data['save_and_send']);
+        $data['removed_items'] = ['remove']; 
+        // Delete items checked to be removed from database
+        foreach ($data['removed_items'] as $remove_item_id) {
+            $original_item = $this->get_inspection_item($remove_item_id);
+            if (handle_removed_sales_item_post($remove_item_id, 'inspection')) {
+                $affectedRows++;
+                $this->log_inspection_activity($id, 'invoice_inspection_activity_removed_item', false, serialize([
+                    $original_item->description,
+                ]));
+            }
+        }
+
+        unset($data['removed_items']);
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . $jenis_pesawat, $data);
+
+        if ($this->db->affected_rows() > 0) {
+            // Check for status change
+            if ($original_status != $data['status']) {
+                $this->log_inspection_activity($origin->id, 'not_inspection_status_updated', false, serialize([
+                    '<original_status>' . $original_status . '</original_status>',
+                    '<new_status>' . $data['status'] . '</new_status>',
+                ]));
+                if ($data['status'] == 2) {
+                    $this->db->where('id', $id);
+                    $this->db->update(db_prefix() . 'inspections', ['sent' => 1, 'datesend' => date('Y-m-d H:i:s')]);
+                }
+            }
+            if ($original_number != $data['number']) {
+                $this->log_inspection_activity($origin->id, 'inspection_activity_number_changed', false, serialize([
+                    $original_number_formatted,
+                    format_inspection_number($origin->id),
+                ]));
+            }
+            $affectedRows++;
+        }
+
+        if ($affectedRows > 0) {
+            hooks()->do_action('after_inspection_item_data_updated', $id);
+
+            return true;
+        }
+
+        return false;
+    }
+
 
 }
 

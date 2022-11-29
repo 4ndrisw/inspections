@@ -169,12 +169,13 @@ class Inspections extends AdminController
     }
     
 
-    public function get_program_items_table($clientid, $program_id, $id)
+    public function get_program_items_table($clientid, $program_id, $status, $id)
     {
         if ($this->input->is_ajax_request()) {
             $this->app->get_table_data(module_views_path('inspections', 'admin/tables/program_items_table'), [
                 'clientid' => $clientid,
                 'program_id' => $program_id,
+                'status' => $status,
                 'inspection_id' => $id,
             ]);
         }
@@ -694,6 +695,104 @@ class Inspections extends AdminController
         if ($this->input->post() && $this->input->is_ajax_request()) {
             $this->inspections_model->inspections_remove_inspection_item($this->input->post());
         }
+    }
+
+    public function load_inspection_template($file=''){
+        $data['nama_alat'] = 'nama_alat';
+        echo 'nama alat = '. 'aaa';
+        $this->load->view('admin/inspections/inspection_template/forklif', $data);
+    }
+/*
+    public function get_inspection_item_data($id, $jenis_pesawat_id){
+
+        $inspection_item = $this->inspections_model->get_inspection_items($id);
+        $inspection = $this->inspections_model->get($inspection_item->inspection_id);
+        $_jenis_pesawat = $inspection->jenis_pesawat;
+
+        $jenis_pesawat = strtolower(str_replace(' ', '_', $_jenis_pesawat));
+        $inspection_item_data = $this->inspections_model->get_inspection_item_data($id, $jenis_pesawat);
+        $data['inspection'] = $inspection;
+        $data['inspection_item'] = $inspection_item;
+        $data['inspection_item_data'] = $inspection_item_data;
+        
+        //return json_encode($data);
+
+    }
+*/
+
+    public function inspection_item($inspection_item_id, $jenis_pesawat_id){
+        
+        $inspection_item = $this->inspections_model->get_inspection_items($inspection_item_id);
+        $inspection = $this->inspections_model->get($inspection_item->inspection_id);
+        $_jenis_pesawat = $inspection_item->jenis_pesawat;
+        $jenis_pesawat = strtolower(str_replace(' ', '_', $_jenis_pesawat));
+        $inspection_item_data = $this->inspections_model->get_inspection_item_data($inspection_item_id, $jenis_pesawat);
+
+        if ($this->input->post()) {
+            $equipment_data = $this->input->post();
+            //var_dump($inspection_item_data);
+
+            $save_and_send_later = false;
+            if (isset($inspection_data['save_and_send_later'])) {
+                unset($inspection_data['save_and_send_later']);
+                $save_and_send_later = true;
+            }
+
+
+            if ($inspection_item_data == NULL) {
+                if (!has_permission('inspections', '', 'create')) {
+                    access_denied('inspections');
+                }
+                $insert_id = $this->inspections_model->add_inspection_item_data($equipment_data, $jenis_pesawat);
+
+                if ($insert_id) {
+                    set_alert('success', _l('added_successfully', _l('inspection')));
+
+                    $redUrl = admin_url('inspections/list_inspections/' . $inspection->id);
+
+                    if ($save_and_send_later) {
+                        $this->session->set_userdata('send_later', true);
+                        // die(redirect($redUrl));
+                    }
+
+                    redirect(
+                        !$this->set_inspection_pipeline_autoload($inspection_item_id) ? $redUrl : admin_url('inspections/list_inspections/')
+                    );
+                }
+            } else {
+                if (!has_permission('inspections', '', 'edit')) {
+                    access_denied('inspections');
+                }
+                $success = $this->inspections_model->update_inspection_item_data($equipment_data, $jenis_pesawat, $inspection_item_data->id);
+                if ($success) {
+                    set_alert('success', _l('updated_successfully', _l('inspection')));
+                }
+                if ($this->set_inspection_pipeline_autoload($inspection_item_id)) {
+                    redirect(admin_url('inspections/list_inspections/'));
+                } else {
+                    redirect(admin_url('inspections/list_inspections/' . $inspection->id));
+                }
+            }
+        }
+
+
+        /*
+         *
+         *
+         */
+
+        $data = [];
+        
+        $data['inspection'] = $inspection;
+        $data['inspection_item'] = $inspection_item;
+        $data['inspection_item_data'] = $inspection_item_data;
+        $data['jenis_pesawat'] = $jenis_pesawat;
+
+        $data['id']      = $inspection_item_id;
+        $data['title']      = $inspection_item->jenis_pesawat . ' form';
+        $data['jenis_pesawat_id']   = $jenis_pesawat_id;
+        $this->load->view('admin/inspections/inspection_item_template', $data);
+
     }
 
 }

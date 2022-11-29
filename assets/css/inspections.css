@@ -27,3 +27,15 @@ tr.inspection_status_1 {
     background: #b7ab00;
     color: #000;
 }
+
+.bg-light {
+    background-color: #f8f9fa!important;
+}
+
+.form-group-no-margin .form-group {
+    margin-bottom: 0;
+}
+
+.tooltip-right i{
+    margin-right: 2px;
+}

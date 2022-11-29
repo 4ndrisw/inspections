@@ -7,11 +7,10 @@ $program_id = $this->ci->input->post('program_id');
 $aColumns = [
     db_prefix() . 'inspections.number',
     db_prefix() . 'inspections.total',
-    db_prefix() . 'inspections.total_tax',
+    db_prefix() . 'inspections.inspector_id',
     'YEAR('. db_prefix() .'inspections.date) as year',
     get_sql_select_client_company(),
     db_prefix() . 'programs.number as program_number',
-    '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'inspections.id and rel_type="inspection" ORDER by tag_order ASC) as tags',
     db_prefix() . 'inspections.date',
     'expirydate',
     db_prefix() . 'inspections.reference_no',
@@ -148,7 +147,7 @@ foreach ($rResult as $aRow) {
 
     $row[] = $amount;
 
-    $row[] = isset($aRow['total_tax']) ? $aRow['total_tax'] : '';
+    $row[] = isset($aRow['inspector_id']) ? $aRow['inspector_id'] : '';
 
     $row[] = $aRow['year'];
 
@@ -158,9 +157,7 @@ foreach ($rResult as $aRow) {
         $row[] = $aRow['deleted_customer_name'];
     }
 
-    $row[] = '<a href="' . admin_url('programs/view/' . $aRow['program_id']) . '">' . $aRow['program_number'] . '</a>';
-
-    $row[] = render_tags($aRow['tags']);
+    $row[] = '<a href="' . admin_url('programs/view/' . $aRow['program_id']) . '">' . format_program_number($aRow['program_number']) . '</a>';
 
     $row[] = _d($aRow[db_prefix() . 'inspections.date']);
 

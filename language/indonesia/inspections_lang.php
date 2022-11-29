@@ -156,9 +156,13 @@ $lang['inspection_dt_table_heading_amount']     						= 'Jumlah';
 $lang['inspection_dt_table_heading_status']     						= 'Status';
 
 $lang['inspection_items_tab']         = 'Items';
+$lang['inspection_items']         = 'Nama Pesawat';
 $lang['program_items_tab']         = 'Program';
 $lang['inspection_item_proposed']         = 'Diajukan untuk inspeksi';
+$lang['this_list_has_been_load_from_master_of_equipment'] = 'Komponen dalam aftar ini diambil dari master peralatan.';
 
+$lang['programs_lowercase']                       = 'programs';
+$lang['program_lowercase']                       = 'program';
 /*
 
 

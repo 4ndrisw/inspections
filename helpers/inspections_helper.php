@@ -729,3 +729,15 @@ function project_has_inspections($program_id)
 
     return ($totalProjectsInspectiond > 0 ? true : false);
 }
+
+
+function delete_inspection_items($id){
+    $CI = &get_instance();
+    $CI->db->where('inspection_id',$id);
+    $CI->db->set('inspection_id', null);
+    $CI->db->update(db_prefix(). 'program_items')();
+
+    $CI->db->where('inspection_id',$id);
+    $CI->db->set('inspection_id', null);
+    $CI->db->update(db_prefix(). 'programs')();
+}

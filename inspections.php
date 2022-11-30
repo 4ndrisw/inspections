@@ -30,6 +30,8 @@ hooks()->add_filter('global_search_result_output', 'inspections_global_search_re
 hooks()->add_filter('get_dashboard_widgets', 'inspections_add_dashboard_widget');
 hooks()->add_filter('module_inspections_action_links', 'module_inspections_action_links');
 
+hooks()->add_action('delete_inspection_items','before_inspection_deleted');
+
 
 function inspections_add_dashboard_widget($widgets)
 {/*

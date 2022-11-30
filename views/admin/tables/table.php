@@ -18,7 +18,7 @@ $aColumns = [
 
 $join = [
     'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'inspections.clientid',
-    'LEFT JOIN ' . db_prefix() . 'currencies ON ' . db_prefix() . 'currencies.id = ' . db_prefix() . 'inspections.currency',
+    //'LEFT JOIN ' . db_prefix() . 'currencies ON ' . db_prefix() . 'currencies.id = ' . db_prefix() . 'inspections.currency',
     'LEFT JOIN ' . db_prefix() . 'programs ON ' . db_prefix() . 'programs.id = ' . db_prefix() . 'inspections.program_id',
 ];
 
@@ -108,7 +108,6 @@ $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     db_prefix() . 'inspections.id',
     db_prefix() . 'inspections.clientid',
     db_prefix() . 'inspections.inspector_id',
-    db_prefix() . 'currencies.name as currency_name',
     'program_id',
     db_prefix() . 'inspections.deleted_customer_name',
     db_prefix() . 'inspections.hash',

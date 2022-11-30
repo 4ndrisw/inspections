@@ -14,10 +14,13 @@ $sIndexColumn = 'id';
 $sTable       = db_prefix().'program_items';
 
 $where        = [
-    'AND clientid=' . $clientid,
+    'AND clientid =' . $program_clientid,
     ];
 
-array_push($where, 'AND inspection_id IS NULL');
+//array_push($where, 'AND inspection_id IS NULL');
+
+//array_push($where, 'AND inspection_id IS NULL');
+array_push($where, 'AND program_id = ' . $program_id);
 
 $join = [
 //    'JOIN '.db_prefix().'staff ON '.db_prefix().'staff.staffid = '.db_prefix().'reminders.staff',
@@ -37,13 +40,6 @@ foreach ($rResult as $aRow) {
     $row = [];
     for ($i = 0; $i < count($aColumns); $i++) {
         $_data = $aRow[$aColumns[$i]];
-
-
-
-
-
-
-
 
         if ($aColumns[$i] == 'staff') {
             $_data = '<a href="' . admin_url('staff/profile/' . $aRow['staff']) . '">' . staff_profile_image($aRow['staff'], [

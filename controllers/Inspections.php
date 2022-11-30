@@ -1,3 +1,4 @@
+
 <?php
 
 use app\services\inspections\InspectionsPipeline;
@@ -53,14 +54,8 @@ class Inspections extends AdminController
             $data['bodyclass']             = 'inspections-total-manual';
             $data['inspections_years']       = $this->inspections_model->get_inspections_years();
             $data['inspections_sale_agents'] = $this->inspections_model->get_sale_agents();
-            if($id){
-                $this->load->view('admin/inspections/manage_small_table', $data);
 
-            }else{
-                $this->load->view('admin/inspections/manage_table', $data);
-
-            }
-
+            $this->load->view('admin/inspections/manage_table', $data);
         }
     }
 
@@ -135,21 +130,6 @@ class Inspections extends AdminController
             $title            = _l('edit', _l('inspection_lowercase'));
         }
 
-        if ($this->input->get('customer_id')) {
-            $data['customer_id'] = $this->input->get('customer_id');
-        }
-
-        if ($this->input->get('inspection_request_id')) {
-            $data['inspection_request_id'] = $this->input->get('inspection_request_id');
-        }
-
-        $this->load->model('taxes_model');
-        $data['taxes'] = $this->taxes_model->get();
-        $this->load->model('currencies_model');
-        $data['currencies'] = $this->currencies_model->get();
-
-        $data['base_currency'] = $this->currencies_model->get_base_currency();
-
         $this->load->model('invoice_items_model');
 
         $data['ajaxItems'] = false;
@@ -169,25 +149,42 @@ class Inspections extends AdminController
     }
     
 
-    public function get_program_items_table($clientid, $program_id, $status, $id)
+    public function get_program_items_table($program_clientid, $program_inspection_id, $program_id, $inspection_status, $inspection_id)
     {
         if ($this->input->is_ajax_request()) {
             $this->app->get_table_data(module_views_path('inspections', 'admin/tables/program_items_table'), [
+                /*
                 'clientid' => $clientid,
                 'program_id' => $program_id,
                 'status' => $status,
                 'inspection_id' => $id,
+                */
+                'program_clientid'=>$program_clientid,
+                'program_inspection_id'=>$program_inspection_id,
+                'program_id'=>$program_id,
+                'inspection_status'=>$inspection_status,
+                'inspection_id'=>$inspection_id,
+
+
             ]);
         }
     }
 
-    public function get_inspection_items_table($clientid, $program_id, $id)
+    public function get_inspection_items_table($program_clientid, $program_id, $inspection_program_id, $inspection_status, $inspection_id)
     {
         if ($this->input->is_ajax_request()) {
             $this->app->get_table_data(module_views_path('inspections', 'admin/tables/inspection_items_table'), [
+                /*
                 'clientid' => $clientid,
                 'program_id' => $program_id,
+                'programid' => $programid,
                 'inspection_id' => $id,
+                */
+                'program_clientid' => $program_clientid,
+                'program_id' => $program_id,
+                'inspection_program_id' => $inspection_program_id,
+                'inspection_status' => $inspection_status,
+                'inspection_id' => $inspection_id,
             ]);
         }
     }
@@ -309,8 +306,8 @@ class Inspections extends AdminController
                 break;
         }
 
-        $data['inspection']          = $inspection;
-        $data['program']          = $program;
+        $data['inspection']        = $inspection;
+        $data['program']           = $program;
         $data['members']           = $this->staff_model->get('', ['active' => 1]);
         $data['inspection_statuses'] = $this->inspections_model->get_statuses();
         $data['totalNotes']        = total_rows(db_prefix() . 'notes', ['rel_id' => $id, 'rel_type' => 'inspection']);
@@ -381,6 +378,33 @@ class Inspections extends AdminController
         if (!has_permission('inspections', '', 'edit')) {
             access_denied('inspections');
         }
+        
+        if($status = 2 || $status = 4){
+            $inspection = $this->inspections_model->get($id);
+            
+            if($inspection->reference_no == NULL || $inspection->reference_no == '' ){
+                set_alert('danger', _l('inspection_status_changed_fail'));                
+                log_activity('error 1 reference_no is null or empty');
+            }
+            else{
+                $total_inspection_items = total_rows(db_prefix().'inspection_items',
+                  array(
+                   'inspection_id'=>$id,
+                  )
+                );
+
+                if($total_inspection_items < 1){
+                    set_alert('danger', _l('inspection_status_changed_fail'));
+                }
+                log_activity('error 2 there is no inspection_items');
+            }
+            if ($this->set_inspection_pipeline_autoload($id)) {
+                redirect($_SERVER['HTTP_REFERER']);
+            } else {
+                redirect(admin_url('inspections/list_inspections/' . $id));
+            }
+        }
+        
         $success = $this->inspections_model->mark_action_status($status, $id);
         if ($success) {
             set_alert('success', _l('inspection_status_changed_success'));

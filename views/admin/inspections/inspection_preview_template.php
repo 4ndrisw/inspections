@@ -16,9 +16,11 @@
                   </li>
                   <li role="presentation">
                      <a href="#tab_inspection_items" onclick="initDataTable('.table-inspection_items', admin_url + 'inspections/get_inspection_items_table/'
-                                                                                       + <?php echo $program->clientid ?> + '/'
-                                                                                       + <?php echo $program->inspection_id ?> + '/'
-                                                                                       + <?php echo $inspection->id ;?>, undefined, undefined, undefined,[1,'asc']); return false;" aria-controls="tab_inspection_items" role="tab" data-toggle="tab">
+                                                                                       + <?php echo $program->clientid; ?> + '/'
+                                                                                       + <?php echo $program->inspection_id; ?> + '/'
+                                                                                       + <?php echo $program->id; ?> + '/'
+                                                                                       + <?php echo $inspection->status ?> + '/'
+                                                                                       + <?php echo $inspection->id; ?>, undefined, undefined, undefined,[1,'asc']); return false;" aria-controls="tab_inspection_items" role="tab" data-toggle="tab">
                      <?php echo _l('inspection_items_tab'); ?>
                      <?php
                         $total_inspection_items = total_rows(db_prefix().'program_items',
@@ -35,6 +37,7 @@
                   <li role="presentation">
                      <a href="#tab_program_items" onclick="initDataTable('.table-program_items', admin_url + 'inspections/get_program_items_table/'
                                                                                        + <?php echo $program->clientid ?> + '/'
+                                                                                       + <?php echo $program->id; ?> + '/'
                                                                                        + <?php echo $inspection->program_id ?> + '/'
                                                                                        + <?php echo $inspection->status ?> + '/'
                                                                                        + <?php echo $inspection->id ;?>, undefined, undefined, undefined,[1,'asc']); return false;" aria-controls="tab_program_items" role="tab" data-toggle="tab">
@@ -43,7 +46,7 @@
                         $total_program_items = total_rows(db_prefix().'program_items',
                           array(
                            'program_id'=>$program->id,
-                           'inspection_id'=>NULL,
+                           //'inspection_id'=>NULL,
                            )
                           );
                         if($total_program_items > 0){
@@ -406,14 +409,14 @@
             <div role="tabpanel" class="tab-pane" id="tab_inspection_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
                <hr />
-               <?php render_datatable(array( _l( 'inspection_items'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'inspection_items'); ?>
+               <?php render_datatable(array( _l( 'inspection_items_table'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'inspection_items'); ?>
                <?php echo _l('this_list_has_been_load_from_master_of_equipment'); ?>
 
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_program_items">
-               <span class="label label-success mbot5 mtop5"><?php echo _l('program_item_proposed'); ?> </span>
+               <span class="label label-success mbot5 mtop5"><?php echo _l('program_items_proposed'); ?> </span>
                <hr />
-               <?php render_datatable(array( _l( 'program_items'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'program_items'); ?>
+               <?php render_datatable(array( _l( 'program_items_table'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'program_items'); ?>
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_tasks">
                <?php init_relation_tasks_table(array('data-new-rel-id'=>$inspection->id,'data-new-rel-type'=>'inspection')); ?>

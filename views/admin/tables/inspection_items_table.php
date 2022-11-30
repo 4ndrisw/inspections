@@ -18,7 +18,7 @@ $sIndexColumn = 'id';
 $sTable       = db_prefix().'program_items';
 
 $where        = [
-    'AND clientid=' . $clientid,
+    'AND clientid=' . $program_clientid,
     ];
 
 array_push($where, 'AND inspection_id = ' . $inspection_id);

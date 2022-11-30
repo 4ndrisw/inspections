@@ -159,11 +159,16 @@ $lang['inspection_dt_table_heading_client']         = 'Customer';
 $lang['inspection_dt_table_heading_expirydate']     = 'Expiry Date';
 $lang['inspection_dt_table_heading_amount']         = 'Amount';
 $lang['inspection_dt_table_heading_status']         = 'Status';
-$lang['inspection_items_tab']         = 'Items';
+$lang['inspection_items_tab']         = 'Inspectioned';
+$lang['inspection_items_table']         = 'Inspectioned';
+
+$lang['program_items_table']         = 'Program';
+
 $lang['inspection_items']         = 'Inspection items';
 $lang['program_items_tab']         = 'Program';
 $lang['this_list_has_been_load_from_master_of_equipment'] = 'Components in this list has been load from master of equipment';
 $lang['related_to_program']         = 'This %s is related to %s: %s';
+$lang['inspection_item_proposed']         = 'Inspection item proposed';
 
 
 /*

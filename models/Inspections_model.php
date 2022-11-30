@@ -993,6 +993,7 @@ class Inspections_model extends App_Model
                 'is_invoiced_inspection_delete_error' => true,
             ];
         }
+        
         hooks()->do_action('before_inspection_deleted', $id);
 
         $number = format_inspection_number($id);
@@ -1031,10 +1032,6 @@ class Inspections_model extends App_Model
 
             delete_tracked_emails($id, 'inspection');
 
-            $this->db->where('relid IN (SELECT id from ' . db_prefix() . 'itemable WHERE rel_type="inspection" AND rel_id="' . $this->db->escape_str($id) . '")');
-            $this->db->where('fieldto', 'items');
-            $this->db->delete(db_prefix() . 'customfieldsvalues');
-
             $this->db->where('rel_id', $id);
             $this->db->where('rel_type', 'inspection');
             $this->db->delete(db_prefix() . 'notes');
@@ -1045,11 +1042,12 @@ class Inspections_model extends App_Model
 
             $this->db->where('rel_type', 'inspection');
             $this->db->where('rel_id', $id);
-            $this->db->delete(db_prefix() . 'taggables');
+            $this->db->delete(db_prefix() . 'reminders');
 
+            /*
             $this->db->where('rel_type', 'inspection');
             $this->db->where('rel_id', $id);
-            $this->db->delete(db_prefix() . 'reminders');
+            $this->db->delete(db_prefix() . 'taggables');
 
             $this->db->where('rel_id', $id);
             $this->db->where('rel_type', 'inspection');
@@ -1067,7 +1065,7 @@ class Inspections_model extends App_Model
             $this->db->where('relid', $id);
             $this->db->where('fieldto', 'inspection');
             $this->db->delete(db_prefix() . 'customfieldsvalues');
-
+            */
             $attachments = $this->get_attachments($id);
             foreach ($attachments as $attachment) {
                 $this->delete_attachment($attachment['id']);

@@ -129,18 +129,19 @@ class Inspections extends AdminController
             $data['edit']     = true;
             $title            = _l('edit', _l('inspection_lowercase'));
         }
-
-        $this->load->model('invoice_items_model');
+        /*
+        $this->load->model('licence_items_model');
 
         $data['ajaxItems'] = false;
         if (total_rows(db_prefix() . 'items') <= ajax_on_total_items()) {
-            $data['items'] = $this->invoice_items_model->get_grouped();
+            $data['items'] = $this->licence_items_model->get_grouped();
         } else {
             $data['items']     = [];
             $data['ajaxItems'] = true;
         }
-        $data['items_groups'] = $this->invoice_items_model->get_groups();
-
+        $data['items_groups'] = $this->licence_items_model->get_groups();
+        */
+        
         $data['staff']             = $this->staff_model->get('', ['active' => 1]);
         $data['inspection_statuses'] = $this->inspections_model->get_statuses();
         $data['title']             = $title;
@@ -278,9 +279,9 @@ class Inspections extends AdminController
 
         $inspection->date       = _d($inspection->date);
         $inspection->expirydate = _d($inspection->expirydate);
-        if ($inspection->invoiceid !== null) {
-            $this->load->model('invoices_model');
-            $inspection->invoice = $this->invoices_model->get($inspection->invoiceid);
+        if ($inspection->licence_id !== null) {
+            $this->load->model('licences_model');
+            $inspection->licence = $this->licences_model->get($inspection->licence_id);
         }
 
         if ($inspection->sent == 0) {
@@ -379,9 +380,9 @@ class Inspections extends AdminController
             access_denied('inspections');
         }
         
-        if($status = 2 || $status = 4){
+        //if($status = 2 || $status = 4){
             $inspection = $this->inspections_model->get($id);
-            
+            /*
             if($inspection->reference_no == NULL || $inspection->reference_no == '' ){
                 set_alert('danger', _l('inspection_status_changed_fail'));                
                 log_activity('error 1 reference_no is null or empty');
@@ -398,12 +399,13 @@ class Inspections extends AdminController
                 }
                 log_activity('error 2 there is no inspection_items');
             }
+            */
             if ($this->set_inspection_pipeline_autoload($id)) {
                 redirect($_SERVER['HTTP_REFERER']);
             } else {
                 redirect(admin_url('inspections/list_inspections/' . $id));
             }
-        }
+        //}
         
         $success = $this->inspections_model->mark_action_status($status, $id);
         if ($success) {
@@ -479,23 +481,23 @@ class Inspections extends AdminController
         }
     }
 
-    /* Convert inspection to invoice */
-    public function convert_to_invoice($id)
+    /* Convert inspection to licence */
+    public function convert_to_licence($id)
     {
-        if (!has_permission('invoices', '', 'create')) {
-            access_denied('invoices');
+        if (!has_permission('licences', '', 'create')) {
+            access_denied('licences');
         }
         if (!$id) {
             die('No inspection found');
         }
-        $draft_invoice = false;
+        $draft_licence = false;
         if ($this->input->get('save_as_draft')) {
-            $draft_invoice = true;
+            $draft_licence = true;
         }
-        $invoiceid = $this->inspections_model->convert_to_invoice($id, false, $draft_invoice);
-        if ($invoiceid) {
-            set_alert('success', _l('inspection_convert_to_invoice_successfully'));
-            redirect(admin_url('invoices/list_invoices/' . $invoiceid));
+        $licence_id = $this->inspections_model->convert_to_licence($id, false, $draft_licence);
+        if ($licence_id) {
+            set_alert('success', _l('inspection_convert_to_licence_successfully'));
+            redirect(admin_url('licences/list_licences/' . $licence_id));
         } else {
             if ($this->session->has_userdata('inspection_pipeline') && $this->session->userdata('inspection_pipeline') == 'true') {
                 $this->session->set_flashdata('inspectionid', $id);
@@ -544,7 +546,7 @@ class Inspections extends AdminController
         }
         $success = $this->inspections_model->delete($id);
         if (is_array($success)) {
-            set_alert('warning', _l('is_invoiced_inspection_delete_error'));
+            set_alert('warning', _l('is_licenced_inspection_delete_error'));
         } elseif ($success == true) {
             set_alert('success', _l('deleted', _l('inspection')));
         } else {
@@ -750,7 +752,8 @@ class Inspections extends AdminController
         $inspection = $this->inspections_model->get($inspection_item->inspection_id);
         $_jenis_pesawat = $inspection_item->jenis_pesawat;
         $jenis_pesawat = strtolower(str_replace(' ', '_', $_jenis_pesawat));
-        $inspection_item_data = $this->inspections_model->get_inspection_item_data($inspection_item_id, $jenis_pesawat);
+
+        $inspection_item_data = $this->inspections_model->get_inspection_item_data($inspection_item_id, $jenis_pesawat_id);
 
         if ($this->input->post()) {
             $equipment_data = $this->input->post();
@@ -811,6 +814,8 @@ class Inspections extends AdminController
         $data['inspection_item'] = $inspection_item;
         $data['inspection_item_data'] = $inspection_item_data;
         $data['jenis_pesawat'] = $jenis_pesawat;
+        
+        log_activity($jenis_pesawat);
 
         $data['id']      = $inspection_item_id;
         $data['title']      = $inspection_item->jenis_pesawat . ' form';

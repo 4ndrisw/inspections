@@ -46,7 +46,6 @@
                         $total_program_items = total_rows(db_prefix().'program_items',
                           array(
                            'program_id'=>$program->id,
-                           //'inspection_id'=>NULL,
                            )
                           );
                         if($total_program_items > 0){
@@ -55,11 +54,14 @@
                         ?>
                      </a>
                   </li>
+                  <?php if(has_permission('subscribe', '', 'basic')){ ?>
                   <li role="presentation">
                      <a href="#tab_tasks" onclick="init_rel_tasks_table(<?php echo $inspection->id; ?>,'inspection'); return false;" aria-controls="tab_tasks" role="tab" data-toggle="tab">
                      <?php echo _l('tasks'); ?>
                      </a>
                   </li>
+                  <?php } ?>
+
                   <li role="presentation">
                      <a href="#tab_activity" aria-controls="tab_activity" role="tab" data-toggle="tab">
                      <?php echo _l('inspection_view_activity_tooltip'); ?>
@@ -172,7 +174,7 @@
                         </li>
                         <?php } ?>
                         <li>
-                           <a href="#" data-toggle="modal" data-target="#sales_attach_file"><?php echo _l('invoice_attach_file'); ?></a>
+                           <a href="#" data-toggle="modal" data-target="#sales_attach_file"><?php echo _l('licence_attach_file'); ?></a>
                         </li>
                         <?php if (staff_can('create', 'projects') && $inspection->program_id == 0) { ?>
                            <li>
@@ -181,7 +183,7 @@
                               </a>
                            </li>
                         <?php } ?>
-                        <?php if($inspection->invoiceid == NULL){
+                        <?php if($inspection->licence_id == NULL){
                            if(staff_can('edit', 'inspections')){
                              foreach($inspection_statuses as $status){
                                if($inspection->status != $status){ ?>
@@ -220,22 +222,22 @@
                            ?>
                      </ul>
                   </div>
-                  <?php if($inspection->invoiceid == NULL){ ?>
-                  <?php if(staff_can('create', 'invoices') && !empty($inspection->clientid)){ ?>
+                  <?php if($inspection->licence_id == NULL){ ?>
+                  <?php if(staff_can('create', 'licences') && !empty($inspection->clientid)){ ?>
                   <div class="btn-group pull-right mleft5">
                      <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                      <?php echo _l('inspection_convert_to_licence'); ?> <span class="caret"></span>
                      </button>
                      <ul class="dropdown-menu">
-                        <li><a href="<?php echo admin_url('inspections/convert_to_invoice/'.$inspection->id.'?save_as_draft=true'); ?>"><?php echo _l('convert_and_save_as_draft'); ?></a></li>
+                        <li><a href="<?php echo admin_url('inspections/convert_to_licence/'.$inspection->id.'?save_as_draft=true'); ?>"><?php echo _l('convert_and_save_as_draft'); ?></a></li>
                         <li class="divider">
-                        <li><a href="<?php echo admin_url('inspections/convert_to_invoice/'.$inspection->id); ?>"><?php echo _l('convert'); ?></a></li>
+                        <li><a href="<?php echo admin_url('inspections/convert_to_licence/'.$inspection->id); ?>"><?php echo _l('convert'); ?></a></li>
                         </li>
                      </ul>
                   </div>
                   <?php } ?>
                   <?php } else { ?>
-                  <a href="<?php echo admin_url('invoices/list_invoices/'.$inspection->invoice->id); ?>" data-placement="bottom" data-toggle="tooltip" title="<?php echo _l('inspection_invoiced_date',_dt($inspection->invoiced_date)); ?>"class="btn mleft10 btn-info"><?php echo format_invoice_number($inspection->invoice->id); ?></a>
+                  <a href="<?php echo admin_url('licences/list_licences/'.$inspection->licence_id); ?>" data-placement="bottom" data-toggle="tooltip" title="<?php echo _l('inspection_licenced_date',_dt($inspection->licenced_date)); ?>"class="btn mleft10 btn-info"><?php echo format_licence_number($inspection->licence_id); ?></a>
                   <?php } ?>
                </div>
             </div>
@@ -246,7 +248,7 @@
             <div role="tabpanel" class="tab-pane ptop10 active" id="tab_inspection">
                <?php if(isset($inspection->inspectiond_email) && $inspection->inspectiond_email) { ?>
                      <div class="alert alert-warning">
-                        <?php echo _l('invoice_will_be_sent_at', _dt($inspection->inspectiond_email->inspectiond_at)); ?>
+                        <?php echo _l('licence_will_be_sent_at', _dt($inspection->inspectiond_email->inspectiond_at)); ?>
                         <?php if(staff_can('edit', 'inspections') || $inspection->addedfrom == get_staff_user_id()) { ?>
                            <a href="#"
                            onclick="edit_inspection_inspectiond_email(<?php echo $inspection->inspectiond_email->id; ?>); return false;">
@@ -286,11 +288,17 @@
                                 echo '<i class="fa fa-tag" aria-hidden="true" data-toggle="tooltip" data-title="'.html_escape(implode(', ',$tags)).'"></i>';
                               }
                               ?>
-                           <a href="<?php echo admin_url('inspections/inspection/'.$inspection->id); ?>">
-                           <span id="inspection-number">
-                           <?php echo format_inspection_number($inspection->id); ?>
-                           </span>
-                           </a>
+
+                               <?php if(staff_can('delete', 'inspections')){ ?>
+                                    <a href="<?php echo admin_url('inspections/inspection/'.$inspection->id); ?>">
+                                    <span id="inspection-number">
+                               <?php } ?>
+                              <?php echo format_inspection_number($inspection->id); ?>
+                              <?php if(staff_can('delete', 'inspections')){ ?>               
+                                    </span>
+                                    </a>
+                               <?php } ?>
+
                         </h4>
                         <address>
                            <?php echo format_organization_info(); ?>
@@ -409,14 +417,14 @@
             <div role="tabpanel" class="tab-pane" id="tab_inspection_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
                <hr />
-               <?php render_datatable(array( _l( 'inspection_items_table'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'inspection_items'); ?>
+               <?php render_datatable(array( _l( 'inspection_items_table_heading'), _l( 'serial_number'), _l( 'unit_number'), _l( 'process')), 'inspection_items'); ?>
                <?php echo _l('this_list_has_been_load_from_master_of_equipment'); ?>
 
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_program_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l('program_items_proposed'); ?> </span>
                <hr />
-               <?php render_datatable(array( _l( 'program_items_table'), _l( 'serial_number'), _l( 'unit_number'), _l( 'kelompok_alat'), _l( 'process')), 'program_items'); ?>
+               <?php render_datatable(array( _l( 'program_items_table'), _l( 'serial_number'), _l( 'unit_number'), _l( 'process')), 'program_items'); ?>
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_tasks">
                <?php init_relation_tasks_table(array('data-new-rel-id'=>$inspection->id,'data-new-rel-type'=>'inspection')); ?>

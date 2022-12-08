@@ -52,7 +52,7 @@ class Myinspection extends ClientsController
                 if (is_array($success)) {
                     if ($action == 4) {
                         $accepted = true;
-                        set_alert('success', _l('clients_inspection_accepted_not_invoiced'));
+                        set_alert('success', _l('clients_inspection_accepted_not_licenced'));
                     } else {
                         set_alert('success', _l('clients_inspection_declined'));
                     }
@@ -179,7 +179,7 @@ class Myinspection extends ClientsController
                 if (is_array($success)) {
                     if ($action == 4) {
                         $accepted = true;
-                        set_alert('success', _l('clients_inspection_accepted_not_invoiced'));
+                        set_alert('success', _l('clients_inspection_accepted_not_licenced'));
                     } else {
                         set_alert('success', _l('clients_inspection_declined'));
                     }

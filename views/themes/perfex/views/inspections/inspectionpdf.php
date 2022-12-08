@@ -78,7 +78,7 @@ $assigned_path = <<<EOF
         <img width="150" height="150" src="$inspection->assigned_path">
     EOF;    
 $assigned_info = '<div style="text-align:center;">';
-    $assigned_info .= get_option('invoice_company_name') . '<br />';
+    $assigned_info .= get_option('licence_company_name') . '<br />';
     $assigned_info .= $assigned_path . '<br />';
 
 if ($inspection->assigned != 0 && get_option('show_assigned_on_inspections') == 1) {

@@ -45,7 +45,7 @@
                   <?php include_once(module_views_path('inspections','admin/inspections/billing_and_shipping_template.php')); ?>
                </div>
                <div class="col-md-6">
-                  <p class="bold"><?php echo _l('invoice_bill_to'); ?></p>
+                  <p class="bold"><?php echo _l('licence_bill_to'); ?></p>
                   <address>
                      <span class="billing_street">
                      <?php $billing_street = (isset($inspection) ? $inspection->billing_street : '--'); ?>
@@ -179,17 +179,15 @@
                   <?php echo render_date_input('date','inspection_add_edit_date',$value); ?>
                </div>
                <div class="col-md-6">
-                  <?php
-                  $value = '';
-                  if(isset($inspection)){
-                    $value = _d($inspection->expirydate);
-                  } else {
-                      if(get_option('inspection_due_after') != 0){
-                          $value = _d(date('Y-m-d', strtotime('+' . get_option('inspection_due_after') . ' DAY', strtotime(date('Y-m-d')))));
-                      }
-                  }
-                  echo render_date_input('expirydate','inspection_add_edit_expirydate',$value); ?>
-               </div>
+                 <div class="form-group select-placeholder">
+                    <label class="control-label"><?php echo _l('inspection_status'); ?></label>
+                    <select class="selectpicker display-block mbot15" name="status" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
+                       <?php foreach($inspection_statuses as $status){ ?>
+                       <option value="<?php echo $status; ?>" <?php if(isset($inspection) && $inspection->status == $status){echo 'selected';} ?>><?php echo format_inspection_status($status,'',false); ?></option>
+                       <?php } ?>
+                    </select>
+                 </div>
+              </div>
             </div>
             <div class="clearfix mbot15"></div>
             <?php $rel_id = (isset($inspection) ? $inspection->id : false); ?>
@@ -198,80 +196,15 @@
                       $rel_id = $custom_fields_rel_transfer;
                   }
              ?>
-            <?php echo render_custom_fields('inspection',$rel_id); ?>
          </div>
          <div class="col-md-6">
-            <div class="panel_s no-shadow">
-               <div class="form-group">
-                  <label for="tags" class="control-label"><i class="fa fa-tag" aria-hidden="true"></i> <?php echo _l('tags'); ?></label>
-                  <input type="text" class="tagsinput" id="tags" name="tags" value="<?php echo (isset($inspection) ? prep_tags_input(get_tags_in($inspection->id,'inspection')) : ''); ?>" data-role="tagsinput">
-               </div>
+            <div class="panel_s no-border">
                <div class="row">
-                  <div class="col-md-6">
-                     <?php
-
-                        $currency_attr = array('disabled'=>true,'data-show-subtext'=>true);
-                        $currency_attr = apply_filters_deprecated('inspection_currency_disabled', [$currency_attr], '2.3.0', 'inspection_currency_attributes');
-                        foreach($currencies as $currency){
-                          if($currency['isdefault'] == 1){
-                            $currency_attr['data-base'] = $currency['id'];
-                          }
-                          if(isset($inspection)){
-                            if($currency['id'] == $inspection->currency){
-                              $selected = $currency['id'];
-                            }
-                          } else{
-                           if($currency['isdefault'] == 1){
-                            $selected = $currency['id'];
-                          }
-                        }
-                        }
-                        $currency_attr = hooks()->apply_filters('inspection_currency_attributes',$currency_attr);
-                        ?>
-                     <?php echo render_select('currency', $currencies, array('id','name','symbol'), 'inspection_add_edit_currency', $selected, $currency_attr); ?>
-                  </div>
-                   <div class="col-md-6">
-                     <div class="form-group select-placeholder">
-                        <label class="control-label"><?php echo _l('inspection_status'); ?></label>
-                        <select class="selectpicker display-block mbot15" name="status" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
-                           <?php foreach($inspection_statuses as $status){ ?>
-                           <option value="<?php echo $status; ?>" <?php if(isset($inspection) && $inspection->status == $status){echo 'selected';} ?>><?php echo format_inspection_status($status,'',false); ?></option>
-                           <?php } ?>
-                        </select>
-                     </div>
-                  </div>
                   <div class="col-md-12">
                     <?php $value = (isset($inspection) ? $inspection->reference_no : ''); ?>
                     <?php echo render_input('reference_no','reference_no',$value); ?>
                   </div>
-                  <div class="col-md-6">
-                         <?php
-                        $selected = '';
-                        foreach($staff as $member){
-                         if(isset($inspection)){
-                           if($inspection->sale_agent == $member['staffid']) {
-                             $selected = $member['staffid'];
-                           }
-                         }
-                        }
-                        echo render_select('sale_agent',$staff,array('staffid',array('firstname','lastname')),'sale_agent_string',$selected);
-                        ?>
-                  </div>
-                  <div class="col-md-6">
-                       <div class="form-group select-placeholder">
-                        <label for="discount_type" class="control-label"><?php echo _l('discount_type'); ?></label>
-                        <select name="discount_type" class="selectpicker" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
-                           <option value="" selected><?php echo _l('no_discount'); ?></option>
-                           <option value="before_tax" <?php
-                              if(isset($inspection)){ if($inspection->discount_type == 'before_tax'){ echo 'selected'; }}?>><?php echo _l('discount_type_before_tax'); ?></option>
-                           <option value="after_tax" <?php if(isset($inspection)){if($inspection->discount_type == 'after_tax'){echo 'selected';}} ?>><?php echo _l('discount_type_after_tax'); ?></option>
-                        </select>
-                     </div>
-                  </div>
                </div>
-               <?php $value = (isset($inspection) ? $inspection->adminnote : ''); ?>
-               <?php echo render_textarea('adminnote','inspection_add_edit_admin_note',$value); ?>
-
             </div>
          </div>
       </div>
@@ -280,10 +213,6 @@
    <div class="row">
     <div class="col-md-12 mtop15">
       <div class="panel-body bottom-transaction">
-        <?php $value = (isset($inspection) ? $inspection->clientnote : get_option('predefined_clientnote_inspection')); ?>
-        <?php echo render_textarea('clientnote','inspection_add_edit_client_note',$value,array(),array(),'mtop15'); ?>
-        <?php $value = (isset($inspection) ? $inspection->terms : get_option('predefined_terms_inspection')); ?>
-        <?php echo render_textarea('terms','terms_and_conditions',$value,array(),array(),'mtop15'); ?>
         <div class="btn-bottom-toolbar text-right">
           <div class="btn-group dropup">
             <button type="button" class="btn-tr btn btn-info inspection-form-submit transaction-submit">

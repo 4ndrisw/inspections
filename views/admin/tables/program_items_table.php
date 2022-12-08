@@ -6,7 +6,6 @@ $aColumns = [
     'nama_pesawat',
     'nomor_seri',
     'nomor_unit',
-    'kelompok_alat',
     '1',
     ];
 
@@ -19,7 +18,7 @@ $where        = [
 
 //array_push($where, 'AND inspection_id IS NULL');
 
-//array_push($where, 'AND inspection_id IS NULL');
+array_push($where, 'AND inspection_id IS NULL');
 array_push($where, 'AND program_id = ' . $program_id);
 
 $join = [
@@ -33,6 +32,9 @@ $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     'surveyor_id',
     'program_id',
     'clientid',
+    'jenis_pesawat_id',
+    'kelompok_alat',
+    'addedfrom',
     ]);
 $output  = $result['output'];
 $rResult = $result['rResult'];
@@ -64,7 +66,14 @@ foreach ($rResult as $aRow) {
             $_data = _dt($_data);
         }
         elseif ($aColumns[$i] == '1') {
-            $_data = '<a class="btn btn-success" title = "'._l('inspection_this_item').'" href="#" onclick="inspections_add_inspection_item(' . $inspection_id . ',' . $aRow['id'] . ',' . '); return false;">+</a>';
+            $current_user = get_client_type(get_staff_user_id());
+            if((get_staff_user_id() == $aRow['addedfrom']
+                || $current_user->client_id == $aRow['clientid']
+                ) && (!in_array($inspection_status, [2,4]))){
+                $_data = '<a class="btn btn-success" title = "'._l('inspection_this_item').'" href="#" onclick="inspections_add_inspection_item(' . $inspection_id . ','. $aRow['jenis_pesawat_id'] .','. $aRow['id'] . '); return false;">+</a>';
+            }else{
+                $_data = '';
+            }
         }
         $row[] = $_data;
     }

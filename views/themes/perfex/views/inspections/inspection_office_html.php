@@ -28,7 +28,7 @@
                   <?php echo form_open(site_url('inspections/office_pdf/'.$inspection->id), array('class'=>'pull-right action-button')); ?>
                   <button type="submit" name="inspectionpdf" class="btn btn-default action-button download mright5 mtop7" value="inspectionpdf">
                   <i class="fa fa-file-pdf-o"></i>
-                  <?php echo _l('clients_invoice_html_btn_download'); ?>
+                  <?php echo _l('clients_licence_html_btn_download'); ?>
                   </button>
                   <?php echo form_close(); ?>
                   <?php if(is_client_logged_in() || is_staff_member()){ ?>
@@ -151,7 +151,7 @@
             <div class="row mtop25">
                <div class="col-md-12">
                   <div class="col-md-6 text-center">
-                     <div class="bold"><?php echo get_option('invoice_company_name'); ?></div>
+                     <div class="bold"><?php echo get_option('licence_company_name'); ?></div>
                      <div class="qrcode text-center">
                         <img src="<?php echo site_url('download/preview_image?path='.protected_file_url_by_path(get_inspection_upload_path('inspection').$inspection->id.'/assigned-'.$inspection_number.'.png')); ?>" class="img-responsive center-block inspection-assigned" alt="inspection-<?= $inspection->id ?>">
                      </div>

@@ -253,7 +253,7 @@ function inspection_status_color_class($id, $replace_default_by_muted = false)
 }
 
 /**
- * Check if the inspection id is last invoice
+ * Check if the inspection id is last licence
  * @param  mixed  $id inspectionid
  * @return boolean
  */
@@ -378,11 +378,11 @@ function get_inspections_where_sql_for_staff($staff_id)
     if ($has_permission_view_own) {
         $whereUser = '((' . db_prefix() . 'inspections.addedfrom=' . $CI->db->escape_str($staff_id) . ' AND ' . db_prefix() . 'inspections.addedfrom IN (SELECT staff_id FROM ' . db_prefix() . 'staff_permissions WHERE feature = "inspections" AND capability="view_own"))';
         if ($allow_staff_view_inspections_assigned == 1) {
-            $whereUser .= ' OR assigned=' . $CI->db->escape_str($staff_id);
+            $whereUser .= ' OR inspector_staff_id=' . $CI->db->escape_str($staff_id);
         }
         $whereUser .= ')';
     } else {
-        $whereUser .= 'assigned=' . $CI->db->escape_str($staff_id);
+        $whereUser .= 'inspector_staff_id=' . $CI->db->escape_str($staff_id);
     }
 
     return $whereUser;
@@ -401,7 +401,7 @@ function staff_has_assigned_inspections($staff_id = '')
     if (is_numeric($cache)) {
         $result = $cache;
     } else {
-        $result = total_rows(db_prefix() . 'inspections', ['assigned' => $staff_id]);
+        $result = total_rows(db_prefix() . 'inspections', ['inspector_staff_id' => $staff_id]);
         $CI->app_object_cache->add('staff-total-assigned-inspections-' . $staff_id, $result);
     }
 
@@ -427,7 +427,7 @@ function user_can_view_inspection($id, $staff_id = false)
 
         $CI = &get_instance();
         $CI->load->model('inspections_model');
-       
+
         $inspection = $CI->inspections_model->get($id);
         if (!$inspection) {
             show_404();
@@ -438,17 +438,17 @@ function user_can_view_inspection($id, $staff_id = false)
                 show_404();
             }
         }
-    
+
         return true;
     }
-    
-    $CI->db->select('id, addedfrom, assigned');
+
+    $CI->db->select('id, addedfrom, inspector_staff_id');
     $CI->db->from(db_prefix() . 'inspections');
     $CI->db->where('id', $id);
     $inspection = $CI->db->get()->row();
 
     if ((has_permission('inspections', $staff_id, 'view_own') && $inspection->addedfrom == $staff_id)
-        || ($inspection->assigned == $staff_id && get_option('allow_staff_view_inspections_assigned') == '1')
+        || ($inspection->inspector_staff_id == $staff_id && get_option('allow_staff_view_inspections_assigned') == '1')
     ) {
         return true;
     }
@@ -486,8 +486,8 @@ function inspection_office_pdf($inspection, $tag = '')
 
 /**
  * Get items table for preview
- * @param  object  $transaction   e.q. invoice, inspection from database result row
- * @param  string  $type          type, e.q. invoice, inspection, proposal
+ * @param  object  $transaction   e.q. licence, inspection from database result row
+ * @param  string  $type          type, e.q. licence, inspection, proposal
  * @param  string  $for           where the items will be shown, html or pdf
  * @param  boolean $admin_preview is the preview for admin area
  * @return object
@@ -510,11 +510,11 @@ function get_inspection_items_table_data($transaction, $type, $for = 'html', $ad
 
 
 /**
- * Add new item do database, used for proposals,inspections,credit notes,invoices
+ * Add new item do database, used for proposals,inspections,credit notes,licences
  * This is repetitive action, that's why this function exists
  * @param array $item     item from $_POST
- * @param mixed $rel_id   relation id eq. invoice id
- * @param string $rel_type relation type eq invoice
+ * @param mixed $rel_id   relation id eq. licence id
+ * @param string $rel_type relation type eq licence
  */
 function add_new_inspection_item_post($item, $rel_id, $rel_type)
 {
@@ -537,7 +537,7 @@ function add_new_inspection_item_post($item, $rel_id, $rel_type)
 }
 
 /**
- * Update inspection item from $_POST 
+ * Update inspection item from $_POST
  * @param  mixed $item_id item id to update
  * @param  array $data    item $_POST data
  * @param  string $field   field is require to be passed for long_description,rate,item_order to do some additional checkings
@@ -618,12 +618,12 @@ function get_inspection_upload_path($type=NULL)
 {
    $type = 'inspection';
    $path = SCHEDULE_ATTACHMENTS_FOLDER;
-   
+
     return hooks()->apply_filters('get_upload_path_by_type', $path, $type);
 }
 
 /**
- * Remove and format some common used data for the inspection feature eq invoice,inspections etc..
+ * Remove and format some common used data for the inspection feature eq licence,inspections etc..
  * @param  array $data $_POST data
  * @return array
  */
@@ -663,7 +663,7 @@ function _format_data_inspection_feature($data)
         $data['data']['adminnote'] = nl2br($data['data']['adminnote']);
     }
 
-    foreach (['country', 'billing_country', 'shipping_country', 'program_id', 'assigned'] as $should_be_zero) {
+    foreach (['country', 'billing_country', 'shipping_country', 'program_id', 'inspector_staff_id'] as $should_be_zero) {
         if (isset($data['data'][$should_be_zero]) && $data['data'][$should_be_zero] == '') {
             $data['data'][$should_be_zero] = 0;
         }
@@ -691,17 +691,17 @@ function _get_inspection_feature_unused_names()
         'task_select', 'task_id',
         'expense_id', 'repeat_every_custom',
         'repeat_type_custom', 'bill_expenses',
-        'save_and_send', 'merge_current_invoice',
-        'cancel_merged_invoices', 'invoices_to_merge',
+        'save_and_send', 'merge_current_licence',
+        'cancel_merged_licences', 'licences_to_merge',
         'tags', 's_prefix', 'save_and_record_payment',
     ];
 }
 
 /**
- * When item is removed eq from invoice will be stored in removed_items in $_POST
+ * When item is removed eq from licence will be stored in removed_items in $_POST
  * With foreach loop this function will remove the item from database and it's taxes
  * @param  mixed $id       item id to remove
- * @param  string $rel_type item relation eq. invoice, inspection
+ * @param  string $rel_type item relation eq. licence, inspection
  * @return boolena
  */
 function handle_removed_inspection_item_post($id, $rel_type)
@@ -740,4 +740,12 @@ function delete_inspection_items($id){
     $CI->db->where('inspection_id',$id);
     $CI->db->set('inspection_id', null);
     $CI->db->update(db_prefix(). 'programs')();
+}
+
+function inspections_before_parse_email_template_message($template){
+
+    //log_activity(json_encode($template));
+
+
+
 }

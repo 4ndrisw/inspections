@@ -13,7 +13,6 @@
 				<?php $this->load->view('admin/inspections/inspection_template'); ?>
 			</div>
 			<?php echo form_close(); ?>
-			<?php $this->load->view('admin/invoice_items/item'); ?>
 		</div>
 	</div>
 </div>
@@ -25,7 +24,7 @@
 		// Init accountacy currency symbol
 		//init_currency();
 		// Project ajax search
-		init_ajax_project_search_by_customer_id();
+		//init_ajax_project_search_by_customer_id();
 		// Maybe items ajax search
 	    //init_ajax_search('items','#item_select.ajax-search',undefined,admin_url+'items/search');
 	});

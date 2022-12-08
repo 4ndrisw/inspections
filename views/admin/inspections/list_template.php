@@ -26,12 +26,12 @@
         </a>
       </li>
       <li>
-        <a href="#" data-cview="invoiced" onclick="dt_custom_view('invoiced','.table-inspections','invoiced'); return false;">
-          <?php echo _l('inspection_invoiced'); ?>
+        <a href="#" data-cview="licenced" onclick="dt_custom_view('licenced','.table-inspections','licenced'); return false;">
+          <?php echo _l('inspection_licenced'); ?>
         </a>
       </li>
       <li>
-        <a href="#" data-cview="not_invoiced" onclick="dt_custom_view('not_invoiced','.table-inspections','not_invoiced'); return false;"><?php echo _l('inspections_not_invoiced'); ?></a>
+        <a href="#" data-cview="not_licenced" onclick="dt_custom_view('not_licenced','.table-inspections','not_licenced'); return false;"><?php echo _l('inspections_not_licenced'); ?></a>
       </li>
       <li class="divider"></li>
       <?php foreach($inspection_statuses as $status){ ?>

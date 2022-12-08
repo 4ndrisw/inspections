@@ -26,8 +26,8 @@
             }
             echo form_hidden('not_sent',$this->input->get('filter'));
             echo form_hidden('program_id');
-            echo form_hidden('invoiced');
-            echo form_hidden('not_invoiced');
+            echo form_hidden('licenced');
+            echo form_hidden('not_licenced');
             ?>
         </div>
         <div class="row text-left quick-top-stats">

@@ -27,7 +27,7 @@
 							 if(count($selected) == 0){
                                     echo '<p class="text-danger">' . _l('sending_email_contact_permissions_warning',_l('customer_permission_inspection')) . '</p><hr />';
                                 }
-							echo render_select('sent_to[]',$contacts,array('id','email','firstname,lastname'),'invoice_inspection_sent_to_email',$selected,array('multiple'=>true),array(),'','',false);
+							echo render_select('sent_to[]',$contacts,array('id','email','firstname,lastname'),'licence_inspection_sent_to_email',$selected,array('multiple'=>true),array(),'','',false);
 							?>
 						</div>
 						<?php echo render_input('cc','CC'); ?>

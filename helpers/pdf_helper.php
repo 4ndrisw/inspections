@@ -144,7 +144,7 @@ function get_pdf_format($option_name)
 
 /**
  * General function for PDF documents logic
- * @param  string $type   document type e.q. payment, statement, invoice
+ * @param  string $type   document type e.q. payment, statement, licence
  * @param  string $class  full class path
  * @param  mixed $params  params to pass in class constructor
  * @return object

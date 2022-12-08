@@ -139,17 +139,17 @@ class Inspection_items_table extends App_items_table_template
     }
 
     /**
-     * Check for period merge field for recurring invoices
+     * Check for period merge field for recurring licences
      *
      * @return string
      */
     protected function period_merge_field($text)
     {
-        if ($this->type != 'invoice') {
+        if ($this->type != 'licence') {
             return $text;
         }
 
-        // Is subscription invoice
+        // Is subscription licence
         if (!property_exists($this->transaction, 'recurring_type')) {
             return $text;
         }

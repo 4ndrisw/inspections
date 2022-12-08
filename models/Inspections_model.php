@@ -2,6 +2,7 @@
 
 use app\services\AbstractKanban;
 use app\services\inspections\InspectionsPipeline;
+include_once (APP_MODULES_PATH . 'licences/models/' .'Licences_model.php');
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -115,58 +116,59 @@ class Inspections_model extends App_Model
     }
 
     /**
-     * Convert inspection to invoice
+     * Convert inspection to licence
      * @param mixed $id inspection id
-     * @return mixed     New invoice ID
+     * @return mixed     New licence ID
      */
-    public function convert_to_invoice($id, $client = false, $draft_invoice = false)
+    public function _inspection_convert_to_licence($id, $client = false, $draft_licence = false)
     {
-        // Recurring invoice date is okey lets convert it to new invoice
+        // Recurring licence date is okey lets convert it to new licence
         $_inspection = $this->get($id);
 
-        $new_invoice_data = [];
-        if ($draft_invoice == true) {
-            $new_invoice_data['save_as_draft'] = true;
+        $new_licence_data = [];
+        if ($draft_licence == true) {
+            $new_licence_data['save_as_draft'] = true;
         }
-        $new_invoice_data['clientid']   = $_inspection->clientid;
-        $new_invoice_data['program_id'] = $_inspection->program_id;
-        $new_invoice_data['number']     = get_option('next_invoice_number');
-        $new_invoice_data['date']       = _d(date('Y-m-d'));
-        $new_invoice_data['duedate']    = _d(date('Y-m-d'));
-        if (get_option('invoice_due_after') != 0) {
-            $new_invoice_data['duedate'] = _d(date('Y-m-d', strtotime('+' . get_option('invoice_due_after') . ' DAY', strtotime(date('Y-m-d')))));
+        $new_licence_data['clientid']   = $_inspection->clientid;
+        $new_licence_data['inspection_id'] = $_inspection->id;
+        $new_licence_data['program_id'] = $_inspection->program_id;
+        $new_licence_data['number']     = get_option('next_licence_number');
+        $new_licence_data['date']       = _d(date('Y-m-d'));
+        $new_licence_data['duedate']    = _d(date('Y-m-d'));
+        if (get_option('licence_due_after') != 0) {
+            $new_licence_data['duedate'] = _d(date('Y-m-d', strtotime('+' . get_option('licence_due_after') . ' DAY', strtotime(date('Y-m-d')))));
         }
-        $new_invoice_data['show_quantity_as'] = $_inspection->show_quantity_as;
-        $new_invoice_data['currency']         = $_inspection->currency;
-        $new_invoice_data['subtotal']         = $_inspection->subtotal;
-        $new_invoice_data['total']            = $_inspection->total;
-        $new_invoice_data['adjustment']       = $_inspection->adjustment;
-        $new_invoice_data['discount_percent'] = $_inspection->discount_percent;
-        $new_invoice_data['discount_total']   = $_inspection->discount_total;
-        $new_invoice_data['discount_type']    = $_inspection->discount_type;
-        $new_invoice_data['sale_agent']       = $_inspection->sale_agent;
+        $new_licence_data['show_quantity_as'] = $_inspection->show_quantity_as;
+        $new_licence_data['currency']         = $_inspection->currency;
+        $new_licence_data['subtotal']         = $_inspection->subtotal;
+        $new_licence_data['total']            = $_inspection->total;
+        $new_licence_data['adjustment']       = $_inspection->adjustment;
+        $new_licence_data['discount_percent'] = $_inspection->discount_percent;
+        $new_licence_data['discount_total']   = $_inspection->discount_total;
+        $new_licence_data['discount_type']    = $_inspection->discount_type;
+        $new_licence_data['sale_agent']       = $_inspection->sale_agent;
         // Since version 1.0.6
-        $new_invoice_data['billing_street']   = clear_textarea_breaks($_inspection->billing_street);
-        $new_invoice_data['billing_city']     = $_inspection->billing_city;
-        $new_invoice_data['billing_state']    = $_inspection->billing_state;
-        $new_invoice_data['billing_zip']      = $_inspection->billing_zip;
-        $new_invoice_data['billing_country']  = $_inspection->billing_country;
-        $new_invoice_data['shipping_street']  = clear_textarea_breaks($_inspection->shipping_street);
-        $new_invoice_data['shipping_city']    = $_inspection->shipping_city;
-        $new_invoice_data['shipping_state']   = $_inspection->shipping_state;
-        $new_invoice_data['shipping_zip']     = $_inspection->shipping_zip;
-        $new_invoice_data['shipping_country'] = $_inspection->shipping_country;
+        $new_licence_data['billing_street']   = clear_textarea_breaks($_inspection->billing_street);
+        $new_licence_data['billing_city']     = $_inspection->billing_city;
+        $new_licence_data['billing_state']    = $_inspection->billing_state;
+        $new_licence_data['billing_zip']      = $_inspection->billing_zip;
+        $new_licence_data['billing_country']  = $_inspection->billing_country;
+        $new_licence_data['shipping_street']  = clear_textarea_breaks($_inspection->shipping_street);
+        $new_licence_data['shipping_city']    = $_inspection->shipping_city;
+        $new_licence_data['shipping_state']   = $_inspection->shipping_state;
+        $new_licence_data['shipping_zip']     = $_inspection->shipping_zip;
+        $new_licence_data['shipping_country'] = $_inspection->shipping_country;
 
         if ($_inspection->include_shipping == 1) {
-            $new_invoice_data['include_shipping'] = 1;
+            $new_licence_data['include_shipping'] = 1;
         }
 
-        $new_invoice_data['show_shipping_on_invoice'] = $_inspection->show_shipping_on_inspection;
-        $new_invoice_data['terms']                    = get_option('predefined_terms_invoice');
-        $new_invoice_data['clientnote']               = get_option('predefined_clientnote_invoice');
+        $new_licence_data['show_shipping_on_licence'] = $_inspection->show_shipping_on_inspection;
+        $new_licence_data['terms']                    = get_option('predefined_terms_licence');
+        $new_licence_data['clientnote']               = get_option('predefined_clientnote_licence');
         // Set to unpaid status automatically
-        $new_invoice_data['status']    = 1;
-        $new_invoice_data['adminnote'] = '';
+        $new_licence_data['status']    = 1;
+        $new_licence_data['adminnote'] = '';
 
         $this->load->model('payment_modes_model');
         $modes = $this->payment_modes_model->get('', [
@@ -179,25 +181,24 @@ class Inspections_model extends App_Model
             }
             $temp_modes[] = $mode['id'];
         }
-        $new_invoice_data['allowed_payment_modes'] = $temp_modes;
-        $new_invoice_data['newitems']              = [];
+        $new_licence_data['newitems']              = [];
         $custom_fields_items                       = get_custom_fields('items');
         $key                                       = 1;
         foreach ($_inspection->items as $item) {
-            $new_invoice_data['newitems'][$key]['description']      = $item['description'];
-            $new_invoice_data['newitems'][$key]['long_description'] = clear_textarea_breaks($item['long_description']);
-            $new_invoice_data['newitems'][$key]['qty']              = $item['qty'];
-            $new_invoice_data['newitems'][$key]['unit']             = $item['unit'];
-            $new_invoice_data['newitems'][$key]['taxname']          = [];
+            $new_licence_data['newitems'][$key]['description']      = $item['description'];
+            $new_licence_data['newitems'][$key]['long_description'] = clear_textarea_breaks($item['long_description']);
+            $new_licence_data['newitems'][$key]['qty']              = $item['qty'];
+            $new_licence_data['newitems'][$key]['unit']             = $item['unit'];
+            $new_licence_data['newitems'][$key]['taxname']          = [];
             $taxes                                                  = get_inspection_item_taxes($item['id']);
             foreach ($taxes as $tax) {
                 // tax name is in format TAX1|10.00
-                array_push($new_invoice_data['newitems'][$key]['taxname'], $tax['taxname']);
+                array_push($new_licence_data['newitems'][$key]['taxname'], $tax['taxname']);
             }
-            $new_invoice_data['newitems'][$key]['rate']  = $item['rate'];
-            $new_invoice_data['newitems'][$key]['order'] = $item['item_order'];
+            $new_licence_data['newitems'][$key]['rate']  = $item['rate'];
+            $new_licence_data['newitems'][$key]['order'] = $item['item_order'];
             foreach ($custom_fields_items as $cf) {
-                $new_invoice_data['newitems'][$key]['custom_fields']['items'][$cf['id']] = get_custom_field_value($item['id'], $cf['id'], 'items', false);
+                $new_licence_data['newitems'][$key]['custom_fields']['items'][$cf['id']] = get_custom_field_value($item['id'], $cf['id'], 'items', false);
 
                 if (!defined('COPY_CUSTOM_FIELDS_LIKE_HANDLE_POST')) {
                     define('COPY_CUSTOM_FIELDS_LIKE_HANDLE_POST', true);
@@ -205,82 +206,162 @@ class Inspections_model extends App_Model
             }
             $key++;
         }
-        $this->load->model('invoices_model');
-        $id = $this->invoices_model->add($new_invoice_data);
+
+        $this->load->model('licences_model');
+        $id = $this->licences_model->add($new_licence_data);
         if ($id) {
-            // Customer accepted the inspection and is auto converted to invoice
+            // Customer accepted the inspection and is auto converted to licence
             if (!is_staff_logged_in()) {
-                $this->db->where('rel_type', 'invoice');
+                $this->db->where('rel_type', 'licence');
                 $this->db->where('rel_id', $id);
                 $this->db->delete(db_prefix() . 'sales_activity');
-                $this->invoices_model->log_invoice_activity($id, 'invoice_activity_auto_converted_from_inspection', true, serialize([
+                $this->licences_model->log_licence_activity($id, 'licence_activity_auto_converted_from_inspection', true, serialize([
                     '<a href="' . admin_url('inspections/list_inspections/' . $_inspection->id) . '">' . format_inspection_number($_inspection->id) . '</a>',
                 ]));
             }
-            // For all cases update addefrom and sale agent from the invoice
+            // For all cases update addefrom and sale agent from the licence
             // May happen staff is not logged in and these values to be 0
             $this->db->where('id', $id);
-            $this->db->update(db_prefix() . 'invoices', [
+            $this->db->update(db_prefix() . 'licences', [
                 'addedfrom'  => $_inspection->addedfrom,
                 'sale_agent' => $_inspection->sale_agent,
             ]);
 
-            // Update inspection with the new invoice data and set to status accepted
+            // Update inspection with the new licence data and set to status accepted
             $this->db->where('id', $_inspection->id);
             $this->db->update(db_prefix() . 'inspections', [
-                'invoiced_date' => date('Y-m-d H:i:s'),
-                'invoiceid'     => $id,
+                'licenced_date' => date('Y-m-d H:i:s'),
+                'licence_id'     => $id,
+            ]);
+
+            // Update program with the new licence data and set to status accepted
+            $this->db->where('id', $_inspection->program_id);
+            $this->db->update(db_prefix() . 'inspections', [
+                'licenced_date' => date('Y-m-d H:i:s'),
+                'licence_id'     => $id,
+                'status'        => 4,
+            ]);
+
+            if ($client == false) {
+                $this->log_inspection_activity($_inspection->id, 'inspection_activity_converted', false, serialize([
+                    '<a href="' . admin_url('licences/list_licences/' . $id) . '">' . format_licence_number($id) . '</a>',
+                ]));
+            }
+
+            hooks()->do_action('inspection_converted_to_licence', ['licence_id' => $id, 'inspection_id' => $_inspection->id]);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Convert program to invoice
+     * @param mixed $id program id
+     * @return mixed     New invoice ID
+     */
+    public function convert_to_licence($id, $client = false, $draft_invoice = false)
+    {
+        // Recurring invoice date is okey lets convert it to new invoice
+        $inspection = $this->get($id);
+
+        $new_licence_data = [];
+        if ($draft_invoice == true) {
+            $new_licence_data['save_as_draft'] = true;
+        }
+        $new_licence_data['clientid']   = $inspection->clientid;
+        $new_licence_data['inspection_id'] = $inspection->id;
+        $new_licence_data['program_id'] = $inspection->program_id;
+        $new_licence_data['government_id'] = $inspection->government_id;
+        $new_licence_data['institution_id'] = $inspection->institution_id;
+        $new_licence_data['inspector_id'] = $inspection->inspector_id;
+        $new_licence_data['inspector_staff_id'] = $inspection->inspector_staff_id;
+        $new_licence_data['surveyor_id'] = $inspection->surveyor_id;
+        $new_licence_data['reference_no'] = $inspection->reference_no;
+        $new_licence_data['number']     = get_option('next_licence_number');
+        $new_licence_data['date']       = _d(date('Y-m-d'));
+
+        //$new_licence_data['show_quantity_as'] = $inspection->show_quantity_as;
+        //$new_licence_data['currency']         = $inspection->currency;
+        //$new_licence_data['subtotal']         = $inspection->subtotal;
+        //$new_licence_data['total']            = $inspection->total;
+        //$new_licence_data['adjustment']       = $inspection->adjustment;
+        //$new_licence_data['discount_percent'] = $inspection->discount_percent;
+        //$new_licence_data['discount_total']   = $inspection->discount_total;
+        //$new_licence_data['discount_type']    = $inspection->discount_type;
+        // Since version 1.0.6
+        $new_licence_data['billing_street']   = clear_textarea_breaks($inspection->billing_street);
+        $new_licence_data['billing_city']     = $inspection->billing_city;
+        $new_licence_data['billing_state']    = $inspection->billing_state;
+        $new_licence_data['billing_zip']      = $inspection->billing_zip;
+        $new_licence_data['billing_country']  = $inspection->billing_country;
+        $new_licence_data['shipping_street']  = clear_textarea_breaks($inspection->shipping_street);
+        $new_licence_data['shipping_city']    = $inspection->shipping_city;
+        $new_licence_data['shipping_state']   = $inspection->shipping_state;
+        $new_licence_data['shipping_zip']     = $inspection->shipping_zip;
+        $new_licence_data['shipping_country'] = $inspection->shipping_country;
+
+        if ($inspection->include_shipping == 1) {
+            $new_licence_data['include_shipping'] = 1;
+        }
+
+        //$new_licence_data['show_shipping_on_invoice'] = $inspection->show_shipping_oninspection;
+        $new_licence_data['terms']                    = get_option('predefined_terms_invoice');
+        $new_licence_data['clientnote']               = get_option('predefined_clientnote_invoice');
+        // Set to unpaid state automatically
+        $new_licence_data['state']    = 1;
+        $new_licence_data['adminnote'] = '';
+
+        include_once(APP_MODULES_PATH . 'licences/models/Licences_model.php');
+
+        $this->load->model('licences_model');
+        $id = $this->licences_model->add($new_licence_data);
+        
+        if ($id) {
+            // Customer accepted the program and is auto converted to invoice
+            if (!is_staff_logged_in()) {
+                $this->db->where('rel_type', 'invoice');
+                $this->db->where('rel_id', $id);
+                $this->db->delete(db_prefix() . 'sales_activity');
+                $this->licences_model->log_invoice_activity($id, 'invoice_activity_auto_converted_frominspection', true, serialize([
+                    '<a href="' . admin_url('programs/listinspections/' . $inspection->id) . '">' . formatinspection_number($inspection->id) . '</a>',
+                ]));
+            }
+            // For all cases update addefrom and sale agent from the invoice
+            // May happen staff is not logged in and these values to be 0
+
+            //$inspection->items             = $this->get_clientinspection_items($inspection->id);
+            $this->db->where('id', $id);
+            $this->db->update(db_prefix() . 'licences', [
+                'addedfrom'  => $inspection->addedfrom,
+                'inspector_staff_id' => $inspection->inspector_staff_id,
+            ]);
+
+
+            // For all cases update licenceedfrom and sale agent from the invoice
+            // May happen staff is not logged in and these values to be 0
+            $this->db->where('program_id', $inspection->id);
+            $this->db->update(db_prefix() . 'program_items', [
+                'licence_addfrom'  => get_staff_user_id(),
+                'licence_id' => $id,
+            ]);
+
+
+            // Update program with the new invoice data and set to state accepted
+            $this->db->where('id', $inspection->id);
+            $this->db->update(db_prefix() . 'inspections', [
+                'licenced_date' => date('Y-m-d H:i:s'),
+                'licence_id'     => $id,
                 'status'        => 4,
             ]);
 
 
-            if (is_custom_fields_smart_transfer_enabled()) {
-                $this->db->where('fieldto', 'inspection');
-                $this->db->where('active', 1);
-                $cfInspections = $this->db->get(db_prefix() . 'customfields')->result_array();
-                foreach ($cfInspections as $field) {
-                    $tmpSlug = explode('_', $field['slug'], 2);
-                    if (isset($tmpSlug[1])) {
-                        $this->db->where('fieldto', 'invoice');
-
-                        $this->db->group_start();
-                        $this->db->like('slug', 'invoice_' . $tmpSlug[1], 'after');
-                        $this->db->where('type', $field['type']);
-                        $this->db->where('options', $field['options']);
-                        $this->db->where('active', 1);
-                        $this->db->group_end();
-
-                        // $this->db->where('slug LIKE "invoice_' . $tmpSlug[1] . '%" AND type="' . $field['type'] . '" AND options="' . $field['options'] . '" AND active=1');
-                        $cfTransfer = $this->db->get(db_prefix() . 'customfields')->result_array();
-
-                        // Don't make mistakes
-                        // Only valid if 1 result returned
-                        // + if field names similarity is equal or more then CUSTOM_FIELD_TRANSFER_SIMILARITY%
-                        if (count($cfTransfer) == 1 && ((similarity($field['name'], $cfTransfer[0]['name']) * 100) >= CUSTOM_FIELD_TRANSFER_SIMILARITY)) {
-                            $value = get_custom_field_value($_inspection->id, $field['id'], 'inspection', false);
-
-                            if ($value == '') {
-                                continue;
-                            }
-
-                            $this->db->insert(db_prefix() . 'customfieldsvalues', [
-                                'relid'   => $id,
-                                'fieldid' => $cfTransfer[0]['id'],
-                                'fieldto' => 'invoice',
-                                'value'   => $value,
-                            ]);
-                        }
-                    }
-                }
-            }
-
             if ($client == false) {
-                $this->log_inspection_activity($_inspection->id, 'inspection_activity_converted', false, serialize([
-                    '<a href="' . admin_url('invoices/list_invoices/' . $id) . '">' . format_invoice_number($id) . '</a>',
+                $this->log_inspection_activity($inspection->id, 'inspection_activity_converted', false, serialize([
+                    '<a href="' . admin_url('licences/list_licences/' . $id) . '">' . format_invoice_number($id) . '</a>',
                 ]));
             }
 
-            hooks()->do_action('inspection_converted_to_invoice', ['invoice_id' => $id, 'inspection_id' => $_inspection->id]);
+            hooks()->do_action('inspection_converted_to_licence', ['licence_id' => $id, 'inspection_id' => $inspection->id, 'program_id' => $inspection->program_id]);
         }
 
         return $id;
@@ -294,65 +375,55 @@ class Inspections_model extends App_Model
     public function copy($id)
     {
         $_inspection                       = $this->get($id);
-        $new_inspection_data               = [];
-        $new_inspection_data['clientid']   = $_inspection->clientid;
-        $new_inspection_data['program_id'] = $_inspection->program_id;
-        $new_inspection_data['number']     = get_option('next_inspection_number');
-        $new_inspection_data['date']       = _d(date('Y-m-d'));
-        $new_inspection_data['expirydate'] = null;
+        $new_licence_data               = [];
+        $new_licence_data['clientid']   = $_inspection->clientid;
+        $new_licence_data['program_id'] = $_inspection->program_id;
+        $new_licence_data['number']     = get_option('next_inspection_number');
+        $new_licence_data['date']       = _d(date('Y-m-d'));
+        $new_licence_data['expirydate'] = null;
 
         if ($_inspection->expirydate && get_option('inspection_due_after') != 0) {
-            $new_inspection_data['expirydate'] = _d(date('Y-m-d', strtotime('+' . get_option('inspection_due_after') . ' DAY', strtotime(date('Y-m-d')))));
+            $new_licence_data['expirydate'] = _d(date('Y-m-d', strtotime('+' . get_option('inspection_due_after') . ' DAY', strtotime(date('Y-m-d')))));
         }
 
-        $new_inspection_data['show_quantity_as'] = $_inspection->show_quantity_as;
-        //$new_inspection_data['currency']         = $_inspection->currency;
-        //$new_inspection_data['subtotal']         = $_inspection->subtotal;
-        //$new_inspection_data['total']            = $_inspection->total;
-        $new_inspection_data['adminnote']        = $_inspection->adminnote;
-        $new_inspection_data['adjustment']       = $_inspection->adjustment;
-        //$new_inspection_data['discount_percent'] = $_inspection->discount_percent;
-        //$new_inspection_data['discount_total']   = $_inspection->discount_total;
-        //$new_inspection_data['discount_type']    = $_inspection->discount_type;
-        $new_inspection_data['terms']            = $_inspection->terms;
-        $new_inspection_data['sale_agent']       = $_inspection->sale_agent;
-        $new_inspection_data['reference_no']     = $_inspection->reference_no;
+        $new_licence_data['show_quantity_as'] = $_inspection->show_quantity_as;
+        //$new_licence_data['currency']         = $_inspection->currency;
+        //$new_licence_data['subtotal']         = $_inspection->subtotal;
+        //$new_licence_data['total']            = $_inspection->total;
+        $new_licence_data['adminnote']        = $_inspection->adminnote;
+        $new_licence_data['adjustment']       = $_inspection->adjustment;
+        //$new_licence_data['discount_percent'] = $_inspection->discount_percent;
+        //$new_licence_data['discount_total']   = $_inspection->discount_total;
+        //$new_licence_data['discount_type']    = $_inspection->discount_type;
+        $new_licence_data['terms']            = $_inspection->terms;
+        $new_licence_data['sale_agent']       = $_inspection->sale_agent;
+        $new_licence_data['reference_no']     = $_inspection->reference_no;
         // Since version 1.0.6
-        $new_inspection_data['billing_street']   = clear_textarea_breaks($_inspection->billing_street);
-        $new_inspection_data['billing_city']     = $_inspection->billing_city;
-        $new_inspection_data['billing_state']    = $_inspection->billing_state;
-        $new_inspection_data['billing_zip']      = $_inspection->billing_zip;
-        $new_inspection_data['billing_country']  = $_inspection->billing_country;
-        $new_inspection_data['shipping_street']  = clear_textarea_breaks($_inspection->shipping_street);
-        $new_inspection_data['shipping_city']    = $_inspection->shipping_city;
-        $new_inspection_data['shipping_state']   = $_inspection->shipping_state;
-        $new_inspection_data['shipping_zip']     = $_inspection->shipping_zip;
-        $new_inspection_data['shipping_country'] = $_inspection->shipping_country;
+        $new_licence_data['billing_street']   = clear_textarea_breaks($_inspection->billing_street);
+        $new_licence_data['billing_city']     = $_inspection->billing_city;
+        $new_licence_data['billing_state']    = $_inspection->billing_state;
+        $new_licence_data['billing_zip']      = $_inspection->billing_zip;
+        $new_licence_data['billing_country']  = $_inspection->billing_country;
+        $new_licence_data['shipping_street']  = clear_textarea_breaks($_inspection->shipping_street);
+        $new_licence_data['shipping_city']    = $_inspection->shipping_city;
+        $new_licence_data['shipping_state']   = $_inspection->shipping_state;
+        $new_licence_data['shipping_zip']     = $_inspection->shipping_zip;
+        $new_licence_data['shipping_country'] = $_inspection->shipping_country;
         if ($_inspection->include_shipping == 1) {
-            $new_inspection_data['include_shipping'] = $_inspection->include_shipping;
+            $new_licence_data['include_shipping'] = $_inspection->include_shipping;
         }
-        $new_inspection_data['show_shipping_on_inspection'] = $_inspection->show_shipping_on_inspection;
+        $new_licence_data['show_shipping_on_inspection'] = $_inspection->show_shipping_on_inspection;
         // Set to unpaid status automatically
-        $new_inspection_data['status']     = 1;
-        $new_inspection_data['clientnote'] = $_inspection->clientnote;
-        $new_inspection_data['adminnote']  = '';
-        $new_inspection_data['newitems']   = [];
+        $new_licence_data['status']     = 1;
+        $new_licence_data['clientnote'] = $_inspection->clientnote;
+        $new_licence_data['adminnote']  = '';
+        $new_licence_data['newitems']   = [];
 
         //
         // get_rest_inspection_items here
         //
 
-        echo '<pre>';
-        var_dump($_inspection);
-        echo '----------------- <br />';
-
-
-        var_dump($_inspection->items);
-        echo '</pre>';
-
-
-
-        $id = $this->add($new_inspection_data);
+        $id = $this->add($new_licence_data);
 
         if ($id) {
             $key                             = 1;
@@ -537,15 +608,16 @@ class Inspections_model extends App_Model
                 handle_custom_fields_post($insert_id, $custom_fields);
             }
 
-            handle_tags_save($tags, $insert_id, 'inspection');
-
+            //handle_tags_save($tags, $insert_id, 'inspection');
+            /*
             foreach ($items as $key => $item) {
                 if ($itemid = add_new_sales_item_post($item, $insert_id, 'inspection')) {
                     _maybe_insert_post_item_tax($itemid, $item, $insert_id, 'inspection');
                 }
             }
+            */
 
-            update_sales_total_tax_column($insert_id, 'inspection', db_prefix() . 'inspections');
+            //update_sales_total_tax_column($insert_id, 'inspection', db_prefix() . 'inspections');
             $this->log_inspection_activity($insert_id, 'inspection_activity_created');
 
             hooks()->do_action('after_inspection_added', $insert_id);
@@ -588,8 +660,10 @@ class Inspections_model extends App_Model
      * @param mixed $id item id
      * @return object
      */
-    public function get_inspection_item_data($inspection_item_id, $jenis_pesawat)
+    public function get_inspection_item_data($inspection_item_id, $jenis_pesawat_id)
     {
+        $jenis_pesawats = get_jenis_pesawat($jenis_pesawat_id);
+        $jenis_pesawat = strtolower(str_replace(' ', '_',$jenis_pesawats->description));
         $this->db->where('inspection_item_id', $inspection_item_id);
         return $this->db->get(db_prefix() . $jenis_pesawat)->row();
     }
@@ -616,6 +690,7 @@ class Inspections_model extends App_Model
 
         $save_and_send = isset($data['save_and_send']);
 
+        /*
         $items = [];
         if (isset($data['items'])) {
             $items = $data['items'];
@@ -641,6 +716,7 @@ class Inspections_model extends App_Model
                 $affectedRows++;
             }
         }
+        */
 
         $data['billing_street'] = trim($data['billing_street']);
         $data['billing_street'] = nl2br($data['billing_street']);
@@ -667,7 +743,7 @@ class Inspections_model extends App_Model
             $original_item = $this->get_inspection_item($remove_item_id);
             if (handle_removed_sales_item_post($remove_item_id, 'inspection')) {
                 $affectedRows++;
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_removed_item', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_removed_item', false, serialize([
                     $original_item->description,
                 ]));
             }
@@ -698,7 +774,7 @@ class Inspections_model extends App_Model
             }
             $affectedRows++;
         }
-
+        /*
         foreach ($items as $key => $item) {
             $original_item = $this->get_inspection_item($item['itemid']);
 
@@ -711,7 +787,7 @@ class Inspections_model extends App_Model
             }
 
             if (update_sales_item_post($item['itemid'], $item, 'rate')) {
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_updated_item_rate', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_updated_item_rate', false, serialize([
                     $original_item->rate,
                     $item['rate'],
                 ]));
@@ -719,7 +795,7 @@ class Inspections_model extends App_Model
             }
 
             if (update_sales_item_post($item['itemid'], $item, 'qty')) {
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_updated_qty_item', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_updated_qty_item', false, serialize([
                     $item['description'],
                     $original_item->qty,
                     $item['qty'],
@@ -728,7 +804,7 @@ class Inspections_model extends App_Model
             }
 
             if (update_sales_item_post($item['itemid'], $item, 'description')) {
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_updated_item_short_description', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_updated_item_short_description', false, serialize([
                     $original_item->description,
                     $item['description'],
                 ]));
@@ -736,7 +812,7 @@ class Inspections_model extends App_Model
             }
 
             if (update_sales_item_post($item['itemid'], $item, 'long_description')) {
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_updated_item_long_description', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_updated_item_long_description', false, serialize([
                     $original_item->long_description,
                     $item['long_description'],
                 ]));
@@ -780,12 +856,13 @@ class Inspections_model extends App_Model
         foreach ($newitems as $key => $item) {
             if ($new_item_added = add_new_sales_item_post($item, $id, 'inspection')) {
                 _maybe_insert_post_item_tax($new_item_added, $item, $id, 'inspection');
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_added_item', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_added_item', false, serialize([
                     $item['description'],
                 ]));
                 $affectedRows++;
             }
         }
+        */
 
         if ($affectedRows > 0) {
             update_sales_total_tax_column($id, 'inspection', db_prefix() . 'inspections');
@@ -820,22 +897,22 @@ class Inspections_model extends App_Model
                 $this->db->or_where('staffid', $inspection->sale_agent);
                 $staff_inspection = $this->db->get(db_prefix() . 'staff')->result_array();
 
-                $invoiceid = false;
-                $invoiced  = false;
+                $licence_id = false;
+                $licenced  = false;
 
                 $contact_id = !is_client_logged_in()
                     ? get_primary_contact_user_id($inspection->clientid)
                     : get_contact_user_id();
 
                 if ($action == 4) {
-                    if (get_option('inspection_auto_convert_to_invoice_on_client_accept') == 1) {
-                        $invoiceid = $this->convert_to_invoice($id, true);
-                        $this->load->model('invoices_model');
-                        if ($invoiceid) {
-                            $invoiced = true;
-                            $invoice  = $this->invoices_model->get($invoiceid);
+                    if (get_option('inspection_auto_convert_to_licence_on_client_accept') == 1) {
+                        $licence_id = $this->convert_to_licence($id, true);
+                        $this->load->model('licences_model');
+                        if ($licence_id) {
+                            $licenced = true;
+                            $licence  = $this->licences_model->get($licence_id);
                             $this->log_inspection_activity($id, 'inspection_activity_client_accepted_and_converted', true, serialize([
-                                '<a href="' . admin_url('invoices/list_invoices/' . $invoiceid) . '">' . format_invoice_number($invoice->id) . '</a>',
+                                '<a href="' . admin_url('licences/list_licences/' . $licence_id) . '">' . format_licence_number($licence->id) . '</a>',
                             ]));
                         }
                     } else {
@@ -871,8 +948,8 @@ class Inspections_model extends App_Model
                     hooks()->do_action('inspection_accepted', $id);
 
                     return [
-                        'invoiced'  => $invoiced,
-                        'invoiceid' => $invoiceid,
+                        'licenced'  => $licenced,
+                        'licence_id' => $licence_id,
                     ];
                 } elseif ($action == 3) {
                     foreach ($staff_inspection as $member) {
@@ -898,8 +975,8 @@ class Inspections_model extends App_Model
                     hooks()->do_action('inspection_declined', $id);
 
                     return [
-                        'invoiced'  => $invoiced,
-                        'invoiceid' => $invoiceid,
+                        'licenced'  => $licenced,
+                        'licence_id' => $licence_id,
                     ];
                 }
             } else {
@@ -988,9 +1065,9 @@ class Inspections_model extends App_Model
             }
         }
         $inspection = $this->get($id);
-        if (!is_null($inspection->invoiceid) && $simpleDelete == false) {
+        if (!is_null($inspection->licence_id) && $simpleDelete == false) {
             return [
-                'is_invoiced_inspection_delete_error' => true,
+                'is_licenced_inspection_delete_error' => true,
             ];
         }
         
@@ -1104,7 +1181,7 @@ class Inspections_model extends App_Model
             'datesend' => date('Y-m-d H:i:s'),
         ]);
 
-        $this->log_inspection_activity($id, 'invoice_inspection_activity_sent_to_client', false, serialize([
+        $this->log_inspection_activity($id, 'licence_inspection_activity_sent_to_client', false, serialize([
             '<custom_data>' . implode(', ', $emails_sent) . '</custom_data>',
         ]));
 
@@ -1404,7 +1481,16 @@ class Inspections_model extends App_Model
 
     public function inspections_add_inspection_item($data){
         $data['inspectionedfrom'] = get_staff_user_id();
+
+        $jenis_pesawats = get_jenis_pesawat($data['jenis_pesawat_id']);
+        $data['jenis_pesawat'] = strtolower(str_replace(' ', '_',$jenis_pesawats->description));
+        
+        $category = get_kelompok_alat($jenis_pesawats->group_id);
+        $data['kelompok_alat'] = $category[0]['name'];
         $this->db->set('inspection_id', $data['inspection_id']);
+        $this->db->set('jenis_pesawat', $data['jenis_pesawat']);
+        $this->db->set('kelompok_alat', $data['kelompok_alat']);
+
         $this->db->where('id', $data['id']);
         $this->db->update(db_prefix() . 'program_items', $data);
     }
@@ -1470,7 +1556,7 @@ class Inspections_model extends App_Model
             $original_item = $this->get_inspection_item($remove_item_id);
             if (handle_removed_sales_item_post($remove_item_id, 'inspection')) {
                 $affectedRows++;
-                $this->log_inspection_activity($id, 'invoice_inspection_activity_removed_item', false, serialize([
+                $this->log_inspection_activity($id, 'licence_inspection_activity_removed_item', false, serialize([
                     $original_item->description,
                 ]));
             }

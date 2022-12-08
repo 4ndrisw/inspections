@@ -9,7 +9,7 @@ $table_data = array(
    _l('surveyors'),
    _l('inspector'),
    array(
-      'name'=>_l('invoice_inspection_year'),
+      'name'=>_l('licence_inspection_year'),
       'th_attrs'=>array('class'=>'not_visible')
    ),
    _l('inspector_staff'),

@@ -10,7 +10,6 @@ $aColumns = [
     'nama_pesawat',
     'nomor_seri',
     'nomor_unit',
-    'kelompok_alat',
     '1',
     ];
 
@@ -35,6 +34,7 @@ $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     'program_id',
     'clientid',
     'jenis_pesawat_id',
+    'addedfrom',
     ]);
 $output  = $result['output'];
 $rResult = $result['rResult'];
@@ -59,12 +59,14 @@ foreach ($rResult as $aRow) {
             $row[] = strtoupper($_data);
         }
         elseif ($aColumns[$i] == '1') {
-            $btn_disable = '';
-//            if($status == '2'){
-//                $btn_disable = 'btn_disable';
-//            }
-
-            $_data = '<a class="btn btn-danger '.$btn_disable.'" title = "'._l('remove_this_item').'" href="#" onclick="inspections_remove_inspection_item(' . $aRow['id'] . ',' . '); return false;">X</a>';
+            $current_user = get_client_type(get_staff_user_id());
+            if((get_staff_user_id() == $aRow['addedfrom']
+                || $current_user->client_id == $aRow['clientid']
+                ) && (!in_array($inspection_status, [2,4]))){
+                $_data = '<a class="btn btn-danger" title = "'._l('remove_this_item').'" href="#" onclick="inspections_remove_inspection_item(' . $aRow['id'] . ',' . '); return false;">X</a>';
+            }else{
+                $_data = '';
+            }
         }
         $row[] = $_data;
     }

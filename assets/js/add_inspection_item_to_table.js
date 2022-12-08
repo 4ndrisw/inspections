@@ -1,6 +1,6 @@
 
 // Append the added items to the preview to the table as items
-function add_item_to_table(data, itemid, merge_invoice, bill_expense) {
+function add_item_to_table(data, itemid, merge_licence, bill_expense) {
 
     // If not custom data passed get from the preview
     data = typeof (data) == 'undefined' || data == 'undefined' ? get_item_preview_values() : data;
@@ -12,7 +12,7 @@ function add_item_to_table(data, itemid, merge_invoice, bill_expense) {
     var item_key = lastAddedItemKey ? lastAddedItemKey += 1 : $("body").find('tbody .item').length + 1;
     lastAddedItemKey = item_key;
 
-    table_row += '<tr class="sortable item" data-merge-invoice="' + merge_invoice + '" data-bill-expense="' + bill_expense + '">';
+    table_row += '<tr class="sortable item" data-merge-licence="' + merge_licence + '" data-bill-expense="' + bill_expense + '">';
 
     table_row += '<td class="dragger">';
 
@@ -180,7 +180,7 @@ function add_item_to_table(data, itemid, merge_invoice, bill_expense) {
         $("body").find('.dt-loader').remove();
         $('#item_select').selectpicker('val', '');
 
-        if (cf_has_required && $('.invoice-form').length) {
+        if (cf_has_required && $('.licence-form').length) {
             validate_form();
         } else if (cf_has_required && $('.inspection-form').length) {
             validate_inspection_form();

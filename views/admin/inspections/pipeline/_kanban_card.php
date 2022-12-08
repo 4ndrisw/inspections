@@ -1,6 +1,6 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
    if ($inspection['status'] == $status) { ?>
-<li data-inspection-id="<?php echo $inspection['id']; ?>" class="<?php if($inspection['invoiceid'] != NULL){echo 'not-sortable';} ?>">
+<li data-inspection-id="<?php echo $inspection['id']; ?>" class="<?php if($inspection['licence_id'] != NULL){echo 'not-sortable';} ?>">
    <div class="panel-body">
       <div class="row">
          <div class="col-md-12">

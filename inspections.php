@@ -30,7 +30,10 @@ hooks()->add_filter('global_search_result_output', 'inspections_global_search_re
 hooks()->add_filter('get_dashboard_widgets', 'inspections_add_dashboard_widget');
 hooks()->add_filter('module_inspections_action_links', 'module_inspections_action_links');
 
+//hooks()->add_filter('inspections_before_email_template_send', 'before_email_template_send');
+
 hooks()->add_action('delete_inspection_items','before_inspection_deleted');
+hooks()->add_action('inspections_after_email_templates','after_email_templates');
 
 
 function inspections_add_dashboard_widget($widgets)
@@ -131,6 +134,7 @@ function inspections_permissions()
             'create' => _l('permission_create'),
             'edit'   => _l('permission_edit'),
             'delete' => _l('permission_delete'),
+            
     ];
 
     register_staff_capabilities('inspections', $capabilities, _l('inspections'));
@@ -187,7 +191,7 @@ function inspections_module_init_menu_items()
                 'name'     => _l('inspections'),
                 'icon'     => 'fa fa-calendar',
                 'href'     => admin_url('inspections'),
-                'position' => 12,
+                'position' => 13,
         ]);
     }
 }

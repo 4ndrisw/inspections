@@ -83,9 +83,10 @@ function reload_inspections_tables() {
 }
 
 
-function inspections_add_inspection_item(inspection_id, id) {
+function inspections_add_inspection_item(inspection_id, jenis_pesawat_id, id) {
     var data = {};
     data.inspection_id = inspection_id;
+    data.jenis_pesawat_id = jenis_pesawat_id;
     data.id = id;
     console.log(data);
     $.post(admin_url + 'inspections/add_inspection_item', data).done(function (response) {

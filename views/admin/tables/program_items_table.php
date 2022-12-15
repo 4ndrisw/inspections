@@ -67,7 +67,8 @@ foreach ($rResult as $aRow) {
         }
         elseif ($aColumns[$i] == '1') {
             $current_user = get_client_type(get_staff_user_id());
-            if((get_staff_user_id() == $aRow['addedfrom']
+            if((is_admin()
+                || get_staff_user_id() == $aRow['addedfrom']
                 || $current_user->client_id == $aRow['clientid']
                 ) && (!in_array($inspection_status, [2,4]))){
                 $_data = '<a class="btn btn-success" title = "'._l('inspection_this_item').'" href="#" onclick="inspections_add_inspection_item(' . $inspection_id . ','. $aRow['jenis_pesawat_id'] .','. $aRow['id'] . '); return false;">+</a>';

@@ -131,6 +131,7 @@ function inspections_permissions()
 
     $capabilities['capabilities'] = [
             'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
+            'view_in_inspectors' => _l('view_inspections_in_inspectors'),
             'create' => _l('permission_create'),
             'edit'   => _l('permission_edit'),
             'delete' => _l('permission_delete'),

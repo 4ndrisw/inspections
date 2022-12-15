@@ -3,7 +3,6 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 $program_id = $this->ci->input->post('program_id');
-
 $staff_id = get_staff_user_id();
 $current_user = get_client_type($staff_id);
 $company_id = $current_user->client_id;
@@ -45,11 +44,11 @@ if ($this->ci->input->post('not_sent')) {
     array_push($filter, 'OR (sent= 0 AND ' . db_prefix() . 'inspections.status NOT IN (2,3,4))');
 }
 if ($this->ci->input->post('licenced')) {
-    array_push($filter, 'OR inspector_id IS NOT NULL');
+    array_push($filter, 'OR licence_id IS NOT NULL');
 }
 
 if ($this->ci->input->post('not_licenced')) {
-    array_push($filter, 'OR inspector_id IS NULL');
+    array_push($filter, 'OR licence_id IS NULL');
 }
 $statuses  = $this->ci->inspections_model->get_statuses();
 $statusIds = [];
@@ -62,6 +61,7 @@ if (count($statusIds) > 0) {
     array_push($filter, 'AND ' . db_prefix() . 'inspections.status IN (' . implode(', ', $statusIds) . ')');
 }
 
+/*
 $agents    = $this->ci->inspections_model->get_sale_agents();
 $agentsIds = [];
 foreach ($agents as $agent) {
@@ -69,9 +69,11 @@ foreach ($agents as $agent) {
         array_push($agentsIds, $agent['sale_agent']);
     }
 }
+
 if (count($agentsIds) > 0) {
     array_push($filter, 'AND sale_agent IN (' . implode(', ', $agentsIds) . ')');
 }
+*/
 
 $years      = $this->ci->inspections_model->get_inspections_years();
 $yearsArray = [];
@@ -88,21 +90,47 @@ if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
 }
 
+/*
 if (isset($clientid) && $clientid != '') {
     array_push($where, 'AND ' . db_prefix() . 'inspections.clientid=' . $this->ci->db->escape_str($clientid));
 }
-
 if ($program_id) {
     array_push($where, 'AND program_id=' . $this->ci->db->escape_str($program_id));
 }
+*/
 
-if (isset($company_id) && $company_id != '') {
-   if(strtolower($current_user->client_type) == 'company'){
-     array_push($where, 'AND ' . db_prefix() . 'inspections.clientid=' . $this->ci->db->escape_str($company_id));
-   } 
+if(!is_admin()){
+    if (isset($company_id) && $company_id != '') {
+       if(strtolower($current_user->client_type) == 'company'){
+         array_push($where, 'AND ' . db_prefix() . 'inspections.clientid=' . $this->ci->db->escape_str($company_id));
+       } 
+      if(strtolower($current_user->client_type) == 'surveyor'){
+         array_push($where, 'AND ' . db_prefix() . 'inspections.surveyor_id=' . $this->ci->db->escape_str($company_id));
+       } 
+    }
+
+    if(is_inspector_staff($staff_id) && has_permission('inspections', '', 'view_in_inspectors')){
+        $inspector_id = get_inspector_id_by_staff_id($staff_id);
+        $userWhere = 'AND '.db_prefix() . 'inspections.inspector_id = ' . $this->ci->db->escape_str($inspector_id);
+        array_push($where, $userWhere);
+    }
+
+    if(is_inspector_staff($staff_id) && !has_permission('inspections', '', 'view_in_inspectors')){
+        $userWhere = 'AND '. db_prefix().'inspections.inspector_staff_id = ' . $this->ci->db->escape_str($staff_id);
+        array_push($where, $userWhere);
+    }
+
+
 }
 
-if(get_option('inspector_staff_only_view_programs_assigned') && is_inspector_staff($staff_id)){
+
+/*
+if (has_permission('inspections', '', 'view') && has_permission('inspections', '', 'view_inspections_in_inpectors')){
+    $inspector_id = get_inspector_id_by_staff_id($staff_id);
+    array_push($where, 'AND ' . db_prefix() . 'inspections.inspector_id=' . $this->ci->db->escape_str($inspector_id));
+}
+
+if(get_option('inspector_staff_only_view_programs_assigned') && is_inspector_staff($staff_id) && has_permission('inspections', '', 'view_inspections_in_inpectors')){
     $userWhere = 'AND '. db_prefix().'inspections.inspector_staff_id'.' = ' . $this->ci->db->escape_str($staff_id);
     array_push($where, $userWhere);
 }
@@ -113,6 +141,7 @@ if(is_inspector_staff($staff_id)){
     array_push($where, $userWhere);
 
 }
+*/
 
 if (!has_permission('inspections', '', 'view')) {
     $userWhere = 'AND ' . get_inspections_where_sql_for_staff(get_staff_user_id());
@@ -130,6 +159,7 @@ $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     db_prefix() . 'inspections.id',
     db_prefix() . 'inspections.clientid',
     db_prefix() . 'inspections.inspector_id',
+    db_prefix() . 'inspections.surveyor_id',
     'program_id',
     db_prefix() . 'inspections.deleted_customer_name',
     db_prefix() . 'inspections.hash',

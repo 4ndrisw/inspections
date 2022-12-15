@@ -19,6 +19,7 @@
                                                                                        + <?php echo $program->clientid; ?> + '/'
                                                                                        + <?php echo $program->inspection_id; ?> + '/'
                                                                                        + <?php echo $program->id; ?> + '/'
+                                                                                       + <?php echo $inspection->surveyor_id; ?> + '/'
                                                                                        + <?php echo $inspection->status ?> + '/'
                                                                                        + <?php echo $inspection->id; ?>, undefined, undefined, undefined,[1,'asc']); return false;" aria-controls="tab_inspection_items" role="tab" data-toggle="tab">
                      <?php echo _l('inspection_items_tab'); ?>
@@ -178,9 +179,11 @@
                         </li>
                         <?php if (staff_can('create', 'projects') && $inspection->program_id == 0) { ?>
                            <li>
+                              
                               <a href="<?php echo admin_url("projects/project?via_inspection_id={$inspection->id}&customer_id={$inspection->clientid}") ?>">
                                  <?php echo _l('inspection_convert_to_project'); ?>
                               </a>
+
                            </li>
                         <?php } ?>
                         <?php if($inspection->licence_id == NULL){
@@ -224,17 +227,10 @@
                   </div>
                   <?php if($inspection->licence_id == NULL){ ?>
                   <?php if(staff_can('create', 'licences') && !empty($inspection->clientid)){ ?>
-                  <div class="btn-group pull-right mleft5">
-                     <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                     <?php echo _l('inspection_convert_to_licence'); ?> <span class="caret"></span>
-                     </button>
-                     <ul class="dropdown-menu">
-                        <li><a href="<?php echo admin_url('inspections/convert_to_licence/'.$inspection->id.'?save_as_draft=true'); ?>"><?php echo _l('convert_and_save_as_draft'); ?></a></li>
-                        <li class="divider">
-                        <li><a href="<?php echo admin_url('inspections/convert_to_licence/'.$inspection->id); ?>"><?php echo _l('convert'); ?></a></li>
-                        </li>
-                     </ul>
-                  </div>
+                  <?php $disabled = 'disabled'; $aria_disabled = true ;?>
+                  <?php if($inspection->status == '2'){$disabled = ''; $aria_disabled = false ;} ?>
+                  <a class="btn btn-success <?php echo $disabled; ?>" role="button" aria-disabled="<?php echo $aria_disabled; ?>"  href="<?php echo admin_url('inspections/convert_to_licence/'.$inspection->id.'?save_as_draft=true'); ?>"><?php echo _l('inspection_convert_to_licence'); ?></a></li>
+
                   <?php } ?>
                   <?php } else { ?>
                   <a href="<?php echo admin_url('licences/list_licences/'.$inspection->licence_id); ?>" data-placement="bottom" data-toggle="tooltip" title="<?php echo _l('inspection_licenced_date',_dt($inspection->licenced_date)); ?>"class="btn mleft10 btn-info"><?php echo format_licence_number($inspection->licence_id); ?></a>
@@ -245,7 +241,10 @@
          <div class="clearfix"></div>
          <hr class="hr-panel-heading" />
          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane ptop10 active" id="tab_inspection">
+            <div role="tabpanel" class="tab-pane active" id="tab_inspection">
+               <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
+               <hr />
+
                <?php if(isset($inspection->inspectiond_email) && $inspection->inspectiond_email) { ?>
                      <div class="alert alert-warning">
                         <?php echo _l('licence_will_be_sent_at', _dt($inspection->inspectiond_email->inspectiond_at)); ?>
@@ -417,9 +416,8 @@
             <div role="tabpanel" class="tab-pane" id="tab_inspection_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l($inspection->inspection_item_info); ?> </span>
                <hr />
-               <?php render_datatable(array( _l( 'inspection_items_table_heading'), _l( 'serial_number'), _l( 'unit_number'), _l( 'process')), 'inspection_items'); ?>
+               <?php render_datatable(array( _l( 'inspection_items_table_heading'), _l( 'serial_number'), _l( 'unit_number'), _l( 'surveyor_staff'), _l( 'process')), 'inspection_items'); ?>
                <?php echo _l('this_list_has_been_load_from_master_of_equipment'); ?>
-
             </div>
             <div role="tabpanel" class="tab-pane" id="tab_program_items">
                <span class="label label-success mbot5 mtop5"><?php echo _l('program_items_proposed'); ?> </span>

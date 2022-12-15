@@ -197,14 +197,84 @@
                   }
              ?>
          </div>
+
          <div class="col-md-6">
-            <div class="panel_s no-border">
+            <div class="no-shadow">
+
                <div class="row">
+                  <div class="col-md-12">
+                     <div class="f_client_id">
+                      <div class="form-group select-placeholder">
+                         <label for="clientid" class="control-label"><?php echo _l('inspector'); ?></label>
+                         <select id="clientid" name="inspector_id" data-live-search="true" data-width="100%" class="ajax-search<?php if(isset($inspection) && empty($inspection->clientid)){echo ' customer-removed';} ?>" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
+                        <?php $selected = (isset($inspection) ? $inspection->inspector_id : '');
+                          if($selected == ''){
+                            $selected = (isset($customer_id) ? $customer_id: '');
+                          }
+                          if($selected != ''){
+                             $rel_data = get_relation_data('customer',$selected);
+                             $rel_val = get_relation_values($rel_data,'customer');
+                             echo '<option value="'.$rel_val['id'].'" selected>'.$rel_val['name'].'</option>';
+                          } ?>
+                         </select>
+                       </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-md-12">
+                     <div class="f_client_id">
+                      <div class="form-group select-placeholder">
+                         <label for="clientid" class="control-label"><?php echo _l('surveyor'); ?></label>
+                         <select id="clientid" name="surveyor_id" data-live-search="true" data-width="100%" class="ajax-search<?php if(isset($inspection) && empty($inspection->clientid)){echo ' customer-removed';} ?>" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
+                        <?php $selected = (isset($inspection) ? $inspection->surveyor_id : '');
+                          if($selected == ''){
+                            $selected = (isset($customer_id) ? $customer_id: '');
+                          }
+                          if($selected != ''){
+                             $rel_data = get_relation_data('customer',$selected);
+                             $rel_val = get_relation_values($rel_data,'customer');
+                             echo '<option value="'.$rel_val['id'].'" selected>'.$rel_val['name'].'</option>';
+                          } ?>
+                         </select>
+                       </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-md-6">
+                         <?php
+                        $selected = '';
+                        foreach($staff as $member){
+                         if(isset($inspection)){
+                           if($inspection->inspector_staff_id == $member['staffid']) {
+                             $selected = $member['staffid'];
+                           }
+                         }
+                        }
+                        echo render_select('inspector_staff_id',$staff,array('staffid',array('firstname','lastname')),'inspector_staff_id_string',$selected);
+                        ?>
+                  </div>
+                   <div class="col-md-6">
+                     <div class="form-group select-placeholder">
+                        <label class="control-label"><?php echo _l('inspection_status'); ?></label>
+                        <select class="selectpicker display-block mbot15" name="status" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
+                           <?php foreach($inspection_statuses as $status){ ?>
+                           <option value="<?php echo $status; ?>" <?php if(isset($inspection) && $inspection->status == $status){echo 'selected';} ?>><?php echo format_inspection_status($status,'',false); ?></option>
+                           <?php } ?>
+                        </select>
+                     </div>
+                  </div>
                   <div class="col-md-12">
                     <?php $value = (isset($inspection) ? $inspection->reference_no : ''); ?>
                     <?php echo render_input('reference_no','reference_no',$value); ?>
                   </div>
+
                </div>
+               <?php $value = (isset($inspection) ? $inspection->adminnote : ''); ?>
+               <?php echo render_textarea('adminnote','inspection_add_edit_admin_note',$value); ?>
+
             </div>
          </div>
       </div>

@@ -172,3 +172,12 @@ function _inspection_append_html(html) {
     }
   }, 150);
 }
+
+function inspections_set_surveyor_staff_id(staffid, id){
+    var data = {};
+    data.staffid = staffid;
+    data.id = id;
+    $.post(admin_url + 'inspections/set_surveyor_staff_id', data).done(function (response) {
+        reload_inspections_tables();
+    });
+}

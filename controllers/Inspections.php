@@ -171,7 +171,7 @@ class Inspections extends AdminController
         }
     }
 
-    public function get_inspection_items_table($program_clientid, $program_id, $inspection_program_id, $inspection_status, $inspection_id)
+    public function get_inspection_items_table($program_clientid, $program_id, $inspection_program_id, $inspection_surveyor_id, $inspection_status, $inspection_id)
     {
         if ($this->input->is_ajax_request()) {
             $this->app->get_table_data(module_views_path('inspections', 'admin/tables/inspection_items_table'), [
@@ -184,6 +184,7 @@ class Inspections extends AdminController
                 'program_clientid' => $program_clientid,
                 'program_id' => $program_id,
                 'inspection_program_id' => $inspection_program_id,
+                'inspection_surveyor_id' => $inspection_surveyor_id,
                 'inspection_status' => $inspection_status,
                 'inspection_id' => $inspection_id,
             ]);
@@ -271,6 +272,23 @@ class Inspections extends AdminController
         }
 
         $inspection = $this->inspections_model->get($id);
+
+        $staff_id = get_staff_user_id();
+        $current_user = get_client_type($staff_id);
+        $company_id = $current_user->client_id;
+        
+        if(!is_admin()){
+            if(strtolower($current_user->client_type) == 'company'){
+                if ($company_id != $inspection->clientid) {
+                    die('No inspection found');
+                }
+            }
+            if(strtolower($current_user->client_type) == 'surveyor'){
+                if ($company_id != $inspection->surveyor_id) {
+                    die('No inspection found');
+                }
+            }
+        }
 
         if (!$inspection || !user_can_view_inspection($id)) {
             echo _l('inspection_not_found');
@@ -380,39 +398,47 @@ class Inspections extends AdminController
             access_denied('inspections');
         }
         
-        //if($status = 2 || $status = 4){
+        log_activity(json_encode('1 == status ' . $status . ' id ' . $id));
+        $action = $status;
+        if($action = 2 || $action = 4){
             $inspection = $this->inspections_model->get($id);
-            /*
+            
             if($inspection->reference_no == NULL || $inspection->reference_no == '' ){
                 set_alert('danger', _l('inspection_status_changed_fail'));                
                 log_activity('error 1 reference_no is null or empty');
             }
             else{
-                $total_inspection_items = total_rows(db_prefix().'inspection_items',
+                $total_inspection_items = total_rows(db_prefix().'program_items',
                   array(
                    'inspection_id'=>$id,
+                   'surveyor_staff_id <>'=> null,
                   )
                 );
-
+                log_activity('total_inspection_items ' . json_encode($total_inspection_items));
                 if($total_inspection_items < 1){
                     set_alert('danger', _l('inspection_status_changed_fail'));
+                    log_activity('error 2 there is no inspection_items');
+
+                    if ($this->set_inspection_pipeline_autoload($id)) {
+                        redirect($_SERVER['HTTP_REFERER']);
+                    } else {
+                        redirect(admin_url('inspections/list_inspections/' . $id));
+                    }                    
                 }
-                log_activity('error 2 there is no inspection_items');
             }
-            */
-            if ($this->set_inspection_pipeline_autoload($id)) {
-                redirect($_SERVER['HTTP_REFERER']);
-            } else {
-                redirect(admin_url('inspections/list_inspections/' . $id));
-            }
-        //}
+        }
         
+        log_activity(json_encode('2 == status ' . $status . ' id ' . $id));
         $success = $this->inspections_model->mark_action_status($status, $id);
+        
+        log_activity(json_encode($success));
+
         if ($success) {
             set_alert('success', _l('inspection_status_changed_success'));
         } else {
             set_alert('danger', _l('inspection_status_changed_fail'));
         }
+
         if ($this->set_inspection_pipeline_autoload($id)) {
             redirect($_SERVER['HTTP_REFERER']);
         } else {
@@ -753,7 +779,7 @@ class Inspections extends AdminController
         $_jenis_pesawat = $inspection_item->jenis_pesawat;
         $jenis_pesawat = strtolower(str_replace(' ', '_', $_jenis_pesawat));
 
-        $inspection_item_data = $this->inspections_model->get_inspection_item_data($inspection_item_id, $jenis_pesawat_id);
+        $inspection_item_data = $this->inspections_model->get_inspection_item_data($inspection_item_id, $jenis_pesawat);
 
         if ($this->input->post()) {
             $equipment_data = $this->input->post();
@@ -822,6 +848,12 @@ class Inspections extends AdminController
         $data['jenis_pesawat_id']   = $jenis_pesawat_id;
         $this->load->view('admin/inspections/inspection_item_template', $data);
 
+    }
+
+    public function set_surveyor_staff_id(){
+        if ($this->input->post() && $this->input->is_ajax_request()) {
+            $this->inspections_model->inspections_set_surveyor_staff_id($this->input->post());
+        }        
     }
 
 }

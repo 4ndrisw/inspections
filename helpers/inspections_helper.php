@@ -743,9 +743,14 @@ function delete_inspection_items($id){
 }
 
 function inspections_before_parse_email_template_message($template){
-
     //log_activity(json_encode($template));
+}
 
-
+function get_staff_client($surveyor_id){
+    $CI = &get_instance();
+    $CI->db->select('staffid, firstname, lastname, client_id');
+    $CI->db->from(db_prefix() . 'staff');
+    $CI->db->where('client_id', $surveyor_id);
+    return $CI->db->get()->result();
 
 }

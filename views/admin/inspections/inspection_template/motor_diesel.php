@@ -26,7 +26,7 @@ echo form_hidden('addedfrom', get_staff_user_id());
 		        <?php echo render_input('nomor_unit','nomor_unit',$value); ?>
 			</div>
 			<div class="col-md-12">
-				<?php $value = ((isset($inspection_item_data) && !is_null($inspection_item_data->lokasi)) ? $inspection_item_data->lokasi : $inspection_item->lokasi); ?>
+				<?php $value = ((isset($inspection_item_data) && !is_null($inspection_item_data->lokasi)) ? $inspection_item_data->lokasi : ''); ?>
 		        <?php echo render_input('lokasi','lokasi',$value); ?>
 			</div>
 		</div>

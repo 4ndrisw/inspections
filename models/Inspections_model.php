@@ -660,10 +660,10 @@ class Inspections_model extends App_Model
      * @param mixed $id item id
      * @return object
      */
-    public function get_inspection_item_data($inspection_item_id, $jenis_pesawat_id)
+    public function get_inspection_item_data($inspection_item_id, $jenis_pesawat)
     {
-        $jenis_pesawats = get_jenis_pesawat($jenis_pesawat_id);
-        $jenis_pesawat = strtolower(str_replace(' ', '_',$jenis_pesawats->description));
+        //$jenis_pesawats = get_jenis_pesawat($jenis_pesawat_id);
+        //$jenis_pesawat = strtolower(str_replace(' ', '_',$jenis_pesawats->description));
         $this->db->where('inspection_item_id', $inspection_item_id);
         return $this->db->get(db_prefix() . $jenis_pesawat)->row();
     }
@@ -883,6 +883,7 @@ class Inspections_model extends App_Model
 
     public function mark_action_status($action, $id, $client = false)
     {
+
         $this->db->where('id', $id);
         $this->db->update(db_prefix() . 'inspections', [
             'status' => $action,
@@ -1484,10 +1485,12 @@ class Inspections_model extends App_Model
 
         $jenis_pesawats = get_jenis_pesawat($data['jenis_pesawat_id']);
         $data['jenis_pesawat'] = strtolower(str_replace(' ', '_',$jenis_pesawats->description));
-        
+        $inspection = $this->get($data['inspection_id']);
+
         $category = get_kelompok_alat($jenis_pesawats->group_id);
         $data['kelompok_alat'] = $category[0]['name'];
         $this->db->set('inspection_id', $data['inspection_id']);
+        $this->db->set('inspection_date', _d($inspection->date));
         $this->db->set('jenis_pesawat', $data['jenis_pesawat']);
         $this->db->set('kelompok_alat', $data['kelompok_alat']);
 
@@ -1499,6 +1502,14 @@ class Inspections_model extends App_Model
     public function inspections_remove_inspection_item($data){
         $this->db->set('inspection_id', null);
         $this->db->where('id', $data['id']);
+        $this->db->update(db_prefix() . 'program_items', $data);
+    }
+
+    public function inspections_set_surveyor_staff_id($data){
+
+        $this->db->set('surveyor_staff_id', $data['staffid']);
+        $this->db->where('id', $data['id']);
+        unset($data['staffid']);
         $this->db->update(db_prefix() . 'program_items', $data);
     }
 

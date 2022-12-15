@@ -4,12 +4,11 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 $input = $this->ci->input->post('id');
 
-log_activity(json_encode($input));
-
 $aColumns = [
     'nama_pesawat',
     'nomor_seri',
     'nomor_unit',
+    'surveyor_staff_id',
     '1',
     ];
 
@@ -43,24 +42,44 @@ foreach ($rResult as $aRow) {
     for ($i = 0; $i < count($aColumns); $i++) {
         $_data = $aRow[$aColumns[$i]];
 
+        if ($aColumns[$i] == 'surveyor_staff_id') {
 
 
+            $staffs = get_staff_client($inspection_surveyor_id);
+
+            $span = '';
+                //if (!$locked) {
+                    $span .= '<div class="dropdown inline-block mleft5 table-export-exclude">';
+                    $span .= '<a href="#" style="font-size:14px;vertical-align:middle;" class="dropdown-toggle text-dark" id="tableLeadsStatus-' . $aRow['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+                    $span .= '<span data-toggle="tooltip" title="' . _l('inspection_get_staff') . '"><i class="fa fa-caret-down" aria-hidden="true"></i></span>';
+                    $span .= '</a>';
+
+                    $span .= '<ul class="dropdown-menu dropdown-menu-right" aria-labelledby="tableLicence-' . $aRow['id'] . '">';
+                    foreach ($staffs as $staff) {
+                        if ($aRow['surveyor_id'] == $staff->client_id) {
+                            $span .= '<li>
+                          <a href="#" onclick="inspections_set_surveyor_staff_id('.$staff->staffid.',' . $aRow['id'] . '); return false;">
+                             ' . $staff->firstname . ' ' . $staff->lastname .'
+                          </a>
+                       </li>';
+                        }
+                    }
+                    $span .= '</ul>';
+                    $span .= '</div>';
+                //}
+                $span .= '</span>';
 
 
-
-
-
-        if ($aColumns[$i] == 'nama_pesawat') {
-
-            //$_data = '<a href="'. admin_url('inspections/inspection_item/' . $aRow['id']. '/' . $aRow['jenis_pesawat_id']) .'" onclick="init_inspection_items_modal(' . $aRow['id'] .','. $aRow['jenis_pesawat_id'] . '); return false;" >' . $aRow['nama_pesawat'] . '</a>';
-            $_data = '<a href="'. admin_url('inspections/inspection_item/' . $aRow['id']. '/' . $aRow['jenis_pesawat_id']) .'">' . $aRow['nama_pesawat'] . '</a>';
-        }
-        elseif ($aColumns[$i] == 'kelompok_alat') {
-            $row[] = strtoupper($_data);
+            if (is_null($aRow['surveyor_staff_id']) || $aRow['surveyor_staff_id']=='') {
+                $_data = '<span class="label label-danger inline-block">' . _l('inspection_get_staff') . $span;
+            }else{
+                $_data = '<span class="label label-success inline-block">' . get_staff_full_name($_data) . $span;                
+            }
         }
         elseif ($aColumns[$i] == '1') {
             $current_user = get_client_type(get_staff_user_id());
-            if((get_staff_user_id() == $aRow['addedfrom']
+            if((is_admin()
+                || get_staff_user_id() == $aRow['addedfrom']
                 || $current_user->client_id == $aRow['clientid']
                 ) && (!in_array($inspection_status, [2,4]))){
                 $_data = '<a class="btn btn-danger" title = "'._l('remove_this_item').'" href="#" onclick="inspections_remove_inspection_item(' . $aRow['id'] . ',' . '); return false;">X</a>';

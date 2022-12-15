@@ -398,14 +398,12 @@ class Inspections extends AdminController
             access_denied('inspections');
         }
         
-        log_activity(json_encode('1 == status ' . $status . ' id ' . $id));
         $action = $status;
         if($action = 2 || $action = 4){
             $inspection = $this->inspections_model->get($id);
             
             if($inspection->reference_no == NULL || $inspection->reference_no == '' ){
                 set_alert('danger', _l('inspection_status_changed_fail'));                
-                log_activity('error 1 reference_no is null or empty');
             }
             else{
                 $total_inspection_items = total_rows(db_prefix().'program_items',
@@ -414,10 +412,8 @@ class Inspections extends AdminController
                    'surveyor_staff_id <>'=> null,
                   )
                 );
-                log_activity('total_inspection_items ' . json_encode($total_inspection_items));
                 if($total_inspection_items < 1){
                     set_alert('danger', _l('inspection_status_changed_fail'));
-                    log_activity('error 2 there is no inspection_items');
 
                     if ($this->set_inspection_pipeline_autoload($id)) {
                         redirect($_SERVER['HTTP_REFERER']);
@@ -428,11 +424,7 @@ class Inspections extends AdminController
             }
         }
         
-        log_activity(json_encode('2 == status ' . $status . ' id ' . $id));
         $success = $this->inspections_model->mark_action_status($status, $id);
-        
-        log_activity(json_encode($success));
-
         if ($success) {
             set_alert('success', _l('inspection_status_changed_success'));
         } else {

@@ -165,7 +165,9 @@ $lang['inspection_related']                       = 'Inspeksi';
 $lang['related_to_inspection']         = 'This %s is terkait dengan %s: %s';
 $lang['licensed']                       = 'proses suket';
 $lang['inspection_items_table_heading']         = 'Nama pesawat';
-$lang['view_inspections_in_inpectors']         = 'Melihat semua inspeksi di UPT';
+$lang['view_inspections_in_inspectors']         = 'Melihat semua inspeksi di UPT';
+$lang['view_inspections_in_institutions']         = 'View all inspections in kantor dinas';
+
 $lang['inspection_items_table_heading']         = 'Nama Pesawat';
 $lang['inspection_get_staff']         = 'Pilih staff';
 

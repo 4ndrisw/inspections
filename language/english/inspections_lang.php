@@ -169,7 +169,9 @@ $lang['program_items_tab']         = 'Program';
 $lang['this_list_has_been_load_from_master_of_equipment'] = 'Components in this list has been load from master of equipment';
 $lang['related_to_program']         = 'This %s is related to %s: %s';
 $lang['inspection_item_proposed']         = 'Inspection item proposed';
-$lang['view_inspections_in_inpectors']         = 'View all inspections in inpectors';
+$lang['view_inspections_in_inspectors']         = 'View all inspections in inpectors';
+$lang['view_inspections_in_institutions']         = 'View all inspections in institutions';
+
 $lang['inspection_items_table_heading']         = 'Equipment';
 $lang['inspection_get_staff']         = 'Get staff';
 

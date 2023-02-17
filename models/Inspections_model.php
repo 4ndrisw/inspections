@@ -1096,23 +1096,18 @@ class Inspections_model extends App_Model
                 }
             }
 
-            if (total_rows(db_prefix() . 'proposals', [
-                    'inspection_id' => $id,
-                ]) > 0) {
-                $this->db->where('inspection_id', $id);
-                $inspection = $this->db->get(db_prefix() . 'proposals')->row();
-                $this->db->where('id', $inspection->id);
-                $this->db->update(db_prefix() . 'proposals', [
-                    'inspection_id'    => null,
-                    'date_converted' => null,
-                ]);
-            }
 
             delete_tracked_emails($id, 'inspection');
 
             $this->db->where('rel_id', $id);
             $this->db->where('rel_type', 'inspection');
             $this->db->delete(db_prefix() . 'notes');
+
+            $this->db->where('inspection_id', $id);
+            $this->db->delete(db_prefix() . 'programs');
+
+            $this->db->where('inspection_id', $id);
+            $this->db->delete(db_prefix() . 'program_items');
 
             $this->db->where('rel_type', 'inspection');
             $this->db->where('rel_id', $id);
@@ -1151,7 +1146,7 @@ class Inspections_model extends App_Model
 
             $this->db->where('rel_id', $id);
             $this->db->where('rel_type', 'inspection');
-            $this->db->delete('inspectiond_emails');
+            $this->db->delete('scheduled_emails');
 
             // Get related tasks
             $this->db->where('rel_type', 'inspection');
@@ -1608,6 +1603,18 @@ class Inspections_model extends App_Model
         return false;
     }
 
+    public function get_inspection_members($id, $with_name = false)
+    {
+        if ($with_name) {
+            $this->db->select('firstname,lastname,email,inspection_id,staff_id');
+        } else {
+            $this->db->select('email,inspection_id,staff_id');
+        }
+        $this->db->join(db_prefix() . 'staff', db_prefix() . 'staff.staffid=' . db_prefix() . 'inspection_members.staff_id');
+        $this->db->where('inspection_id', $id);
+
+        return $this->db->get(db_prefix() . 'inspection_members')->result_array();
+    }
 
 }
 

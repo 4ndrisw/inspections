@@ -466,7 +466,7 @@ function user_can_view_inspection($id, $staff_id = false)
  */
 function inspection_pdf($inspection, $tag = '')
 {
-    return app_pdf('inspection',  module_libs_path(SCHEDULES_MODULE_NAME) . 'pdf/Inspection_pdf', $inspection, $tag);
+    return app_pdf('inspection',  module_libs_path(INSPECTIONS_MODULE_NAME) . 'pdf/Inspection_pdf', $inspection, $tag);
 }
 
 
@@ -479,7 +479,7 @@ function inspection_pdf($inspection, $tag = '')
  */
 function inspection_office_pdf($inspection, $tag = '')
 {
-    return app_pdf('inspection',  module_libs_path(SCHEDULES_MODULE_NAME) . 'pdf/Inspection_office_pdf', $inspection, $tag);
+    return app_pdf('inspection',  module_libs_path(INSPECTIONS_MODULE_NAME) . 'pdf/Inspection_office_pdf', $inspection, $tag);
 }
 
 
@@ -494,7 +494,7 @@ function inspection_office_pdf($inspection, $tag = '')
  */
 function get_inspection_items_table_data($transaction, $type, $for = 'html', $admin_preview = false)
 {
-    include_once(module_libs_path(SCHEDULES_MODULE_NAME) . 'Inspection_items_table.php');
+    include_once(module_libs_path(INSPECTIONS_MODULE_NAME) . 'Inspection_items_table.php');
 
     $class = new Inspection_items_table($transaction, $type, $for, $admin_preview);
 

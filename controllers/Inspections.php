@@ -59,6 +59,49 @@ class Inspections extends AdminController
         }
     }
 
+
+    /* List all inspections datatables */
+    public function inspection_items($id, $itemid)
+    {
+        if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
+            access_denied('inspections');
+        }
+
+        $isPipeline = $this->session->userdata('inspection_pipeline') == 'true';
+
+        $data['inspection_statuses'] = $this->inspections_model->get_statuses();
+        if ($isPipeline && !$this->input->get('status') && !$this->input->get('filter')) {
+            $data['title']           = _l('inspections_pipeline');
+            $data['bodyclass']       = 'inspections-pipeline inspections-total-manual';
+            $data['switch_pipeline'] = false;
+
+            if (is_numeric($id)) {
+                $data['inspectionid'] = $id;
+            } else {
+                $data['inspectionid'] = $this->session->flashdata('inspectionid');
+            }
+
+            $this->load->view('admin/inspections/pipeline/manage_item', $data);
+        } else {
+
+            // Pipeline was initiated but user click from home page and need to show table only to filter
+            if ($this->input->get('status') || $this->input->get('filter') && $isPipeline) {
+                $this->pipeline(0, true);
+            }
+
+            $data['inspectionid']            = $id;
+            $data['switch_pipeline']       = true;
+            $data['title']                 = _l('inspections');
+            $data['bodyclass']             = 'inspections-total-manual';
+            $data['inspections_years']       = $this->inspections_model->get_inspections_years();
+            $data['inspections_sale_agents'] = $this->inspections_model->get_sale_agents();
+
+            $this->load->view('admin/inspections/manage_item_table', $data);
+        }
+    }
+
+
+
     public function table($clientid = '')
     {
         if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
@@ -278,12 +321,12 @@ class Inspections extends AdminController
         $company_id = $current_user->client_id;
         
         if(!is_admin()){
-            if(strtolower($current_user->client_type) == 'company'){
+            if($current_user->client_type == 'company' || $current_user->client_type == 'Company'){
                 if ($company_id != $inspection->clientid) {
                     die('No inspection found');
                 }
             }
-            if(strtolower($current_user->client_type) == 'surveyor'){
+            if($current_user->client_type == 'surveyor' || $current_user->client_type == 'Surveyor'){
                 if ($company_id != $inspection->surveyor_id) {
                     die('No inspection found');
                 }
@@ -343,6 +386,94 @@ class Inspections extends AdminController
             return $this->load->view('admin/inspections/inspection_preview_template', $data, true);
         }
     }
+
+
+
+    /* Get all inspection data used when user click on inspection number in a datatable left side*/
+    public function get_inspection_items_data_ajax($id, $to_return = false)
+    {
+        if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
+            echo _l('access_denied');
+            die;
+        }
+
+        if (!$id) {
+            die('No inspection found');
+        }
+
+        $inspection = $this->inspections_model->get($id);
+
+        $staff_id = get_staff_user_id();
+        $current_user = get_client_type($staff_id);
+        $company_id = $current_user->client_id;
+        
+        if(!is_admin()){
+            if($current_user->client_type == 'company' || $current_user->client_type == 'Company'){
+                if ($company_id != $inspection->clientid) {
+                    die('No inspection found');
+                }
+            }
+            if($current_user->client_type == 'surveyor' || $current_user->client_type == 'Surveyor'){
+                if ($company_id != $inspection->surveyor_id) {
+                    die('No inspection found');
+                }
+            }
+        }
+
+        if (!$inspection || !user_can_view_inspection($id)) {
+            echo _l('inspection_not_found');
+            die;
+        }
+
+        $inspection->date       = _d($inspection->date);
+        $inspection->expirydate = _d($inspection->expirydate);
+        if ($inspection->licence_id !== null) {
+            $this->load->model('licences_model');
+            $inspection->licence = $this->licences_model->get($inspection->licence_id);
+        }
+
+        if ($inspection->sent == 0) {
+            $template_name = 'inspection_send_to_customer';
+        } else {
+            $template_name = 'inspection_send_to_customer_already_sent';
+        }
+
+        $data = prepare_mail_preview_data($template_name, $inspection->clientid);
+        include_once(FCPATH . 'modules/programs/models/programs_model.php');
+        $this->load->model('programs_model');
+        $program = $this->programs_model->get($inspection->program_id);
+
+        $data['activity']          = $this->inspections_model->get_inspection_activity($id);
+        
+        switch ($inspection->status) {
+            case '1':
+                $inspection->inspection_item_info = 'inspection_item_proposed';
+                break;
+            
+            default:
+                $inspection->inspection_item_info = 'inspection_item_processed';
+                break;
+        }
+
+        $data['inspection']        = $inspection;
+        $data['program']           = $program;
+        $data['members']           = $this->staff_model->get('', ['active' => 1]);
+        $data['inspection_statuses'] = $this->inspections_model->get_statuses();
+        $data['totalNotes']        = total_rows(db_prefix() . 'notes', ['rel_id' => $id, 'rel_type' => 'inspection']);
+
+        $data['send_later'] = false;
+        if ($this->session->has_userdata('send_later')) {
+            $data['send_later'] = true;
+            $this->session->unset_userdata('send_later');
+        }
+
+        if ($to_return == false) {
+            $this->load->view('admin/inspections/inspection_preview_template', $data);
+        } else {
+            return $this->load->view('admin/inspections/inspection_preview_template', $data, true);
+        }
+    }
+
 
     public function get_inspections_total()
     {
@@ -654,6 +785,21 @@ class Inspections extends AdminController
         $this->load->view('admin/inspections/pipeline/inspection', $data);
     }
 
+    public function pipeline_items_open($id)
+    {
+        $canView = user_can_view_inspection($id);
+        if (!$canView) {
+            access_denied('Inspections');
+        } else {
+            if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && $canView == false) {
+                access_denied('Inspections');
+            }
+        }
+
+        $data['id']       = $id;
+        $data['inspection'] = $this->get_inspection_items_data_ajax($id, true);
+        $this->load->view('admin/inspections/pipeline/inspection', $data);
+    }
     public function update_pipeline()
     {
         if (has_permission('inspections', '', 'edit')) {

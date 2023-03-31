@@ -21,7 +21,7 @@
      initDataTable('.table-inspections', admin_url+'inspections/table', ['undefined'], ['undefined'], Unit_ServerParams, [7, 'desc']);
      init_inspection(inspectionid);
    });
-   console.log(inspectionid);
+   //console.log(inspectionid);
 </script>
 </body>
 </html>

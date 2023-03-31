@@ -55,6 +55,18 @@ function get_inspection_item_taxes($itemid)
 }
 
 /**
+ * Function that return inspection item taxes based on passed item id
+ * @param  mixed $itemid
+ * @return array
+ */
+function get_inspection_items($inspection_id)
+{
+    $CI = &get_instance();
+    $CI->db->where('inspection_id', $inspection_id);
+    $items = $CI->db->get(db_prefix() . 'program_items')->result_array();
+    return $items;
+}
+/**
  * Get Inspection short_url
  * @since  Version 2.7.3
  * @param  object $inspection

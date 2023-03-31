@@ -19,19 +19,20 @@ class Inspection_pdf extends App_pdf
 
         parent::__construct();
 
-        $this->tag             = $tag;
+        //$this->tag             = $tag;
         $this->inspection        = $inspection;
-        $this->inspection_number = format_inspection_number($this->inspection->id);
+        //$this->inspection_number = format_inspection_number($this->inspection->id);
 
-        $this->SetTitle($this->inspection_number);
+        //$this->SetTitle($this->inspection_number);
+        $this->SetTitle('aaaaaaaaaaaaaaaaaa');
     }
 
     public function prepare()
     {
 
         $this->set_view_vars([
-            'status'          => $this->inspection->status,
-            'inspection_number' => $this->inspection_number,
+            //'status'          => $this->inspection->status,
+            //'inspection_number' => $this->inspection_number,
             'inspection'        => $this->inspection,
         ]);
 

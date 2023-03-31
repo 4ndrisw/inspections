@@ -155,6 +155,8 @@ $lang['inspection_dt_table_heading_expirydate'] 						= 'Tanggal Selesai';
 $lang['inspection_dt_table_heading_amount']     						= 'Jumlah';
 $lang['inspection_dt_table_heading_status']     						= 'Status';
 
+$lang['inspection_item_dt_table_heading_number']         = 'Item#';
+
 $lang['inspection_items_tab']         = 'Inspeksi';
 $lang['inspection_items']         = 'Nama Pesawat';
 $lang['program_items_tab']         = 'Program';

@@ -162,6 +162,9 @@ $lang['inspection_dt_table_heading_status']         = 'Status';
 $lang['inspection_items_tab']         = 'Inspectioned';
 $lang['inspection_items_table']         = 'Inspectioned';
 
+$lang['inspection_item_dt_table_heading_number']         = 'Item#';
+
+
 $lang['program_items_table']         = 'Program';
 
 $lang['inspection_items']         = 'Inspection items';

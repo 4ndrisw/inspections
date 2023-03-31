@@ -1,4 +1,3 @@
-
 <?php
 
 use app\services\inspections\InspectionsPipeline;
@@ -61,24 +60,26 @@ class Inspections extends AdminController
 
 
     /* List all inspections datatables */
-    public function inspection_items($id, $itemid)
+    public function list_inspection_items($id, $itemid)
     {
         if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
             access_denied('inspections');
         }
 
-        $isPipeline = $this->session->userdata('inspection_pipeline') == 'true';
+        $isPipelineItem = $this->session->userdata('inspection_pipeline_item') == 'true';
 
         $data['inspection_statuses'] = $this->inspections_model->get_statuses();
-        if ($isPipeline && !$this->input->get('status') && !$this->input->get('filter')) {
-            $data['title']           = _l('inspections_pipeline');
+        if ($isPipelineItem && !$this->input->get('status') && !$this->input->get('filter')) {
+            $data['title']           = _l('inspections_pipeline_items');
             $data['bodyclass']       = 'inspections-pipeline inspections-total-manual';
             $data['switch_pipeline'] = false;
 
             if (is_numeric($id)) {
                 $data['inspectionid'] = $id;
+                $data['inspectionitemid'] = $itemid;
             } else {
                 $data['inspectionid'] = $this->session->flashdata('inspectionid');
+                $data['inspectionitemid'] = $this->session->flashdata('inspectionitemid');
             }
 
             $this->load->view('admin/inspections/pipeline/manage_item', $data);
@@ -111,6 +112,17 @@ class Inspections extends AdminController
             'clientid' => $clientid,
         ]));
     }
+
+    public function table_items($clientid = '')
+    {
+        if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
+            ajax_access_denied();
+        }
+        $this->app->get_table_data(module_views_path('inspections', 'admin/tables/table_items',[
+            'clientid' => $clientid,
+        ]));
+    }
+
 
     /* Add new inspection or update existing */
     public function inspection($id = '')
@@ -390,7 +402,7 @@ class Inspections extends AdminController
 
 
     /* Get all inspection data used when user click on inspection number in a datatable left side*/
-    public function get_inspection_items_data_ajax($id, $to_return = false)
+    public function get_inspection_item_data_ajax($id, $to_return = false)
     {
         if (!has_permission('inspections', '', 'view') && !has_permission('inspections', '', 'view_own') && get_option('allow_staff_view_inspections_assigned') == '0') {
             echo _l('access_denied');
@@ -468,9 +480,9 @@ class Inspections extends AdminController
         }
 
         if ($to_return == false) {
-            $this->load->view('admin/inspections/inspection_preview_template', $data);
+            $this->load->view('admin/inspections/inspection_item_preview_template', $data);
         } else {
-            return $this->load->view('admin/inspections/inspection_preview_template', $data, true);
+            return $this->load->view('admin/inspections/inspection_item_preview_template', $data, true);
         }
     }
 
@@ -557,6 +569,7 @@ class Inspections extends AdminController
         
         $success = $this->inspections_model->mark_action_status($status, $id);
         if ($success) {
+            //
             set_alert('success', _l('inspection_status_changed_success'));
         } else {
             set_alert('danger', _l('inspection_status_changed_fail'));
@@ -797,9 +810,10 @@ class Inspections extends AdminController
         }
 
         $data['id']       = $id;
-        $data['inspection'] = $this->get_inspection_items_data_ajax($id, true);
-        $this->load->view('admin/inspections/pipeline/inspection', $data);
+        $data['inspection_item'] = $this->get_inspection_item_data_ajax($id, true);
+        $this->load->view('admin/inspections/pipeline/inspection_items', $data);
     }
+
     public function update_pipeline()
     {
         if (has_permission('inspections', '', 'edit')) {
@@ -819,6 +833,21 @@ class Inspections extends AdminController
         ]);
         if ($manual == false) {
             redirect(admin_url('inspections/list_inspections'));
+        }
+    }
+
+    public function pipeline_items($set = 0, $manual = false)
+    {
+        if ($set == 1) {
+            $set = 'true';
+        } else {
+            $set = 'false';
+        }
+        $this->session->set_userdata([
+            'inspection_pipeline' => $set,
+        ]);
+        if ($manual == false) {
+            redirect(admin_url('inspections/inspection_items'));
         }
     }
 

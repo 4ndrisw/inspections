@@ -981,15 +981,17 @@ class Inspections_model extends App_Model
                     ];
                 }
             } else {
-                if ($action == 2) {
+                if($action == 2) {
                     $this->db->where('id', $id);
                     $this->db->update(db_prefix() . 'inspections', ['sent' => 1, 'datesend' => date('Y-m-d H:i:s')]);
+                    hooks()->do_action('inspection_already_sent', $inspection);
+                }elseif ($action == 1) {
+                    hooks()->do_action('inspection_set_draft', $id);
                 }
                 // Admin marked inspection
                 $this->log_inspection_activity($id, 'inspection_activity_marked', false, serialize([
                     '<status>' . $action . '</status>',
                 ]));
-
                 return true;
             }
         }

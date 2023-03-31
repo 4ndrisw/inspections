@@ -17,7 +17,7 @@
                                 <a href="#" class="btn btn-default inspections-total" onclick="slideToggle('#stats-top'); init_inspection_total(true); return false;" data-toggle="tooltip" title="<?php echo _l('view_stats_tooltip'); ?>"><i class="fa fa-bar-chart"></i></a>
                             </div>
                             <?php } ?>
-                            <a href="<?php echo admin_url('inspections/pipeline/'.$switch_pipeline); ?>" class="btn btn-default mleft5 pull-left"><?php echo _l('switch_to_list_view'); ?></a>
+                            <a href="<?php echo admin_url('inspections/pipeline_items/'.$switch_pipeline); ?>" class="btn btn-default mleft5 pull-left"><?php echo _l('switch_to_list_view'); ?></a>
                         </div>
                         <div class="col-md-4" data-toggle="tooltip" data-placement="bottom" data-title="<?php echo _l('search_by_tags'); ?>">
                             <?php echo render_input('search','','','search',array('data-name'=>'search','onkeyup'=>'inspection_pipeline();'),array(),'no-margin') ?>
@@ -75,7 +75,7 @@
 <?php init_tail(); ?>
 <script>
     $(function(){
-      inspection_pipeline();
+      inspection_pipeline_item();
   });
 </script>
 </body>
